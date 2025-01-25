@@ -1,5 +1,6 @@
 package com.kimpscan.api.exchange.controller
 
+import com.kimpscan.api.exchange.client.BinanceClient
 import com.kimpscan.api.exchange.client.UpbitClient
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -9,14 +10,18 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/exchange")
-class ExchangeController(private val upbitClient: UpbitClient) {
+class ExchangeController(
+    private val upbitClient: UpbitClient,
+    private val binanceClient: BinanceClient
+) {
 
     @GetMapping("/world")
     fun hello(): String {
 
         runBlocking {
             val result = listOf(
-                async { upbitClient.getTicker() }
+                async { upbitClient.getTicker() },
+                async { binanceClient.getTicker() }
             ).map { it.await() }
 
             println("result" + result)
