@@ -1,6 +1,6 @@
 package com.kimpscan.api.exchange.client
 
-import com.kimpscan.api.exchange.dto.BinanceTickerDto
+import com.kimpscan.api.exchange.dto.BinanceTickerApiResDto
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.json.Json
 import org.springframework.http.MediaType
@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 @Component
 class BinanceClient(private val webClient: WebClient) {
-    suspend fun getTicker(): List<BinanceTickerDto> {
+    suspend fun getTickers(): List<BinanceTickerApiResDto> {
         return try {
             val response = webClient.get()
                 .uri("https://api.binance.com/api/v3/ticker/price")
@@ -19,7 +19,7 @@ class BinanceClient(private val webClient: WebClient) {
                 .bodyToMono(String::class.java)
                 .awaitSingle()
 
-            return Json.decodeFromString<List<BinanceTickerDto>>(response)
+            return Json.decodeFromString<List<BinanceTickerApiResDto>>(response)
 
         } catch (e: WebClientResponseException) {
             // HTTP 에러 처리 (예: 4xx, 5xx)

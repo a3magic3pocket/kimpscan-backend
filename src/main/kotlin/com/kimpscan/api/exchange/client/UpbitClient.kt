@@ -1,6 +1,6 @@
 package com.kimpscan.api.exchange.client
 
-import com.kimpscan.api.exchange.dto.UpbitTickerDto
+import com.kimpscan.api.exchange.dto.UpbitTickerApiResDto
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.json.Json
 import org.springframework.http.MediaType
@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Component
 class UpbitClient(private val webClient: WebClient) {
 
-    suspend fun getTicker(): List<UpbitTickerDto> {
+    suspend fun getTickers(): List<UpbitTickerApiResDto> {
         return try {
             val response = webClient.get()
                 .uri("https://api.upbit.com/v1/ticker/all?quote_currencies=KRW")
@@ -21,7 +21,7 @@ class UpbitClient(private val webClient: WebClient) {
                 .bodyToMono(String::class.java)
                 .awaitSingle()
 
-            return Json.decodeFromString<List<UpbitTickerDto>>(response)
+            return Json.decodeFromString<List<UpbitTickerApiResDto>>(response)
 
         } catch (e: WebClientResponseException) {
             // HTTP 에러 처리 (예: 4xx, 5xx)
