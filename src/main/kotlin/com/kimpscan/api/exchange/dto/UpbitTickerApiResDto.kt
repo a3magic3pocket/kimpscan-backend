@@ -1,5 +1,6 @@
 package com.kimpscan.api.exchange.dto
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
@@ -32,6 +33,7 @@ data class UpbitTickerApiResDto(
     @SerialName("highest_52_week_date") val highest52WeekDate: String? = null,
     @SerialName("lowest_52_week_price") val lowest52WeekPrice: Double? = null,
     @SerialName("lowest_52_week_date") val lowest52WeekDate: String? = null,
-    @SerialName("timestamp") val timestamp: Double? = null
+    @SerialName("timestamp") val timestamp: Double? = null,
+    val extra: Map<String, @Contextual Any> = emptyMap()
 
 )
