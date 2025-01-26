@@ -5,7 +5,7 @@ import com.kimpscan.api.exchange.client.ExRateClient
 import com.kimpscan.api.exchange.client.UpbitClient
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.coroutineScope
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -22,30 +22,8 @@ class ExchangeService(
 
     }
 
-    private fun convertSymbolUpbit(market: String): String {
-        return market.replace("KRW-", "") + "USDT"
-    }
-
-    private fun createExRateChecker(): () -> Double {
-        var baseDate: LocalDateTime? = null
-        var exRate = 0.0
-
-        return {
-            runBlocking {
-                val now = LocalDateTime.now().toLocalDate().atStartOfDay()
-                if (baseDate == null || now.isAfter(baseDate)) {
-                    baseDate = now
-
-                    val exRateDeferred = async { exRateClient.getCurrentExRate() }
-                    exRate = exRateDeferred.await()
-                }
-                exRate
-            }
-        }
-    }
-
-    fun getKimp(): String {
-        runBlocking {
+    suspend fun getKimp(): String {
+        coroutineScope {
             val upbitDeferred = async { upbitClient.getTickers() }
             val binanceDeferred = async { binanceClient.getTickers() }
 
@@ -67,11 +45,31 @@ class ExchangeService(
                 println("kimp" + kimp)
                 println()
             }
-
-
         }
 
         return "getKimp"
+    }
+
+    private fun convertSymbolUpbit(market: String): String {
+        return market.replace("KRW-", "") + "USDT"
+    }
+
+    private fun createExRateChecker(): suspend () -> Double {
+        var baseDate: LocalDateTime? = null
+        var exRate = 0.0
+
+        return suspend {
+            coroutineScope {
+                val now = LocalDateTime.now().toLocalDate().atStartOfDay()
+                if (baseDate == null || now.isAfter(baseDate)) {
+                    baseDate = now
+
+                    val exRateDeferred = async { exRateClient.getCurrentExRate() }
+                    exRate = exRateDeferred.await()
+                }
+                exRate
+            }
+        }
     }
 
 }
