@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <title>DOM Loaded Example</title>
+</head>
+<body>
+<h1 id="message">로드 중...</h1>
+<button onclick="connect()">연결</button>
+</body>
+<script>
+
+    // WebSocket 연결
+    function connect() {
+        socket = new WebSocket('ws://localhost:8080/ws'); // WebSocket 엔드포인트로 연결
+        socket.onopen = function(event) {
+            console.log('Connected to WebSocket');
+        };
+
+        socket.onmessage = function(event) {
+            console.log('Received: ' + event.data);
+            showMessage(event.data); // 서버에서 받은 메시지 표시
+        };
+
+        socket.onerror = function(error) {
+            console.error('WebSocket Error: ' + error);
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket connection closed');
+        };
+    }
+
+// DOMContentLoaded 이벤트를 사용하여 DOM이 로드된 후 코드 실행
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM이 로드되었습니다!");
+    document.getElementById("message").textContent = "DOM이 성공적으로 로드되었습니다!";
+});
+</script>
+</html>

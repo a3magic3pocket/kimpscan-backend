@@ -3,9 +3,10 @@ package com.kimpscan.api.exchange.service
 import com.kimpscan.api.exchange.client.BinanceClient
 import com.kimpscan.api.exchange.client.ExRateClient
 import com.kimpscan.api.exchange.client.UpbitClient
+import com.kimpscan.api.exchange.handler.WebSocketMessageHandler
 import jakarta.annotation.PostConstruct
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -14,12 +15,35 @@ class ExchangeService(
     private val upbitClient: UpbitClient,
     private val binanceClient: BinanceClient,
     private val exRateClient: ExRateClient,
+    private val webSocketMessageHandler: WebSocketMessageHandler,
 ) {
     val exRateChecker = createExRateChecker()
+    // CoroutineScope를 애플리케이션 라이프사이클에 맞게 관리
+    private val job = SupervisorJob() // 코루틴 작업을 관리할 Job
+    private val scope = CoroutineScope(Dispatchers.Default + job) // 스코프 설정
 
     @PostConstruct
     fun init() {
+        startBroadcastKimpLoop()
+    }
 
+    @OptIn(DelicateCoroutinesApi::class)
+    fun startBroadcastKimpLoop() {
+        GlobalScope.launch {
+            while (true) {
+                delay(1000)
+                webSocketMessageHandler.printSessions()
+            }
+        }
+//        scope.launch {
+//            while (true) {
+//                webSocketMessageHandler.printSessions()
+//                delay(1000)
+//                val kimp = getKimp()
+//                println("kimp"+kimp)
+//                webSocketMessageHandler.broadcast(kimp)
+//            }
+//        }
     }
 
     suspend fun getKimp(): String {
@@ -41,9 +65,9 @@ class ExchangeService(
 
                 val kimp = (upbitTicker.tradePrice - wonBinancePrice) / wonBinancePrice * 100
 
-                println("upbitSymbol" + upbitSymbol)
-                println("kimp" + kimp)
-                println()
+//                println("upbitSymbol" + upbitSymbol)
+//                println("kimp" + kimp)
+//                println()
             }
         }
 

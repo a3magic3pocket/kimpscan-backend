@@ -36,6 +36,7 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 kotlin {
