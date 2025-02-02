@@ -1,7 +1,10 @@
 package com.kimpscan.api.exchange.dto
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ExchangeTickerDto(
-    val symbol: String,
+    val rootSymbol: String,
     val korName: String,
     val kimp: Double,
 )

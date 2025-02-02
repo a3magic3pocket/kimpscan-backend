@@ -1,6 +1,7 @@
 package com.kimpscan.api.exchange.client
 
-import com.kimpscan.api.exchange.dto.UpbitTickerApiResDto
+import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
+import com.kimpscan.api.exchange.dto.client.UpbitTickerApiResDto
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.json.Json
 import org.springframework.http.MediaType
@@ -11,6 +12,27 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 @Component
 class UpbitClient(private val webClient: WebClient) {
+
+    suspend fun getSymbolInfo(): List<UpbitSymbolInfoApiResDto> {
+        return try {
+            val response = webClient.get()
+                .uri("https://api.upbit.com/v1/market/all?is_details=true")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String::class.java)
+                .awaitSingle()
+
+            return Json.decodeFromString<List<UpbitSymbolInfoApiResDto>>(response)
+        } catch (e: WebClientResponseException) {
+            // HTTP 에러 처리 (예: 4xx, 5xx)
+            println("HTTP Status: ${e.statusCode}, Response Body: ${e.responseBodyAsString}")
+            listOf()
+        } catch (e: Exception) {
+            // 그 외 일반적인 에러 처리
+            println("Unexpected Error: ${e.message}")
+            listOf()
+        }
+    }
 
     suspend fun getTickers(): List<UpbitTickerApiResDto> {
         return try {

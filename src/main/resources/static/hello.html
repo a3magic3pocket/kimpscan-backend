@@ -21,7 +21,6 @@
 
         socket.onmessage = function(event) {
             console.log('Received: ' + event.data);
-            showMessage(event.data); // 서버에서 받은 메시지 표시
         };
 
         socket.onerror = function(error) {

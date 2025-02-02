@@ -13,7 +13,9 @@ class ExchangeController(
 
     @GetMapping("/world")
     suspend fun hello(): String {
-        return exchangeService.getKimp()
+        exchangeService.getKimp()
+
+        return "hello"
     }
 
 }

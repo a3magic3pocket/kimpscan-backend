@@ -1,4 +1,4 @@
-package com.kimpscan.api.exchange.dto
+package com.kimpscan.api.exchange.dto.client
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
