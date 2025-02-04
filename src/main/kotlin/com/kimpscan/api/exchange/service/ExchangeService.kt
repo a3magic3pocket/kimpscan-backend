@@ -115,17 +115,24 @@ class ExchangeService(
 
                 val wonBinancePrice = binancePrice.toDouble() * usdWonExRate
 
-                var kimp = (upbitTicker.tradePrice - wonBinancePrice) / wonBinancePrice * 100
+                val kimp = (upbitTicker.tradePrice - wonBinancePrice) / wonBinancePrice * 100
                 if (kimp.isNaN() || kimp.isInfinite()) {
                     continue
                 }
-                kimp = BigDecimal(kimp).setScale(5, RoundingMode.HALF_UP).toDouble()
 
+//                바이낸스 24시 기준 usdtOldPrice, usdtVolume, usdtOl dVolume
+//                https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints#24hr-ticker-price-change-statistics
 
                 val ticker = ExchangeTickerDto(
                     rootSymbol = convertRootSymbol(usdtSymbol = upbitSymbol),
                     korName = upbitSymbolInfoMap[upbitSymbol]?.koreanName ?: "",
-                    kimp = kimp
+                    korPrice = roundDecimalPlaces(upbitTicker.tradePrice),
+                    korOldPrice = roundDecimalPlaces(
+                        upbitTicker.prevClosingPrice ?: 0.0
+                    ),
+                    korVolume = roundDecimalPlaces(upbitTicker.tradeVolume ?: 0.0),
+                    korOldVolume = roundDecimalPlaces(upbitTicker.accTradeVolume24h ?: 0.0),
+                    kimp = roundDecimalPlaces(kimp)
                 )
                 tickerMap[upbitSymbol] = ticker
             }
@@ -140,6 +147,11 @@ class ExchangeService(
 
     private fun convertRootSymbol(usdtSymbol: String): String {
         return usdtSymbol.replace("USDT", "")
+    }
+
+    private fun roundDecimalPlaces(value: Double, scale: Int = 5): Double {
+        return BigDecimal(value).setScale(scale, RoundingMode.HALF_UP)
+            .toDouble()
     }
 
     private fun createExRateChecker(): suspend () -> Double {
