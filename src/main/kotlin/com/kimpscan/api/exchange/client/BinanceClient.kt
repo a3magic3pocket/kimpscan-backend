@@ -8,6 +8,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -53,9 +54,13 @@ class BinanceClient(private val webClient: WebClient) {
             val byteArrayOutputStream = ByteArrayOutputStream()
 
             responseFlux.collect { dataBuffer ->
-                val byteArrayBuffer = ByteArray(dataBuffer.readableByteCount())
-                dataBuffer.read(byteArrayBuffer)
-                byteArrayOutputStream.write(byteArrayBuffer) // ByteArrayOutputStream 에 기록
+                try {
+                    val byteArrayBuffer = ByteArray(dataBuffer.readableByteCount())
+                    dataBuffer.read(byteArrayBuffer)
+                    byteArrayOutputStream.write(byteArrayBuffer) // ByteArrayOutputStream 에 기록
+                } finally {
+                    DataBufferUtils.release(dataBuffer)
+                }
             }
 
             // ByteArrayOutputStream 에서 바이트 배열로 변환
