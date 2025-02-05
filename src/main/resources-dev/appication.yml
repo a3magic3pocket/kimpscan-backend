@@ -15,3 +15,13 @@ spring:
     console:
       enabled: true              # H2 콘솔 활성화
       path: /h2-console          # H2 콘솔 접속 경로
+server:
+  compression:
+    enabled: true
+    mime-types:
+      - application/json
+      - application/xml
+      - text/html
+      - text/plain
+    min-response-size: 1024
+
