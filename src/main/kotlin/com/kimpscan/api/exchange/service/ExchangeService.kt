@@ -92,6 +92,14 @@ class ExchangeService(
         }
     }
 
+    fun getBeforeTickerMap(): MutableMap<String, ExchangeTickerDto> {
+        val loadedBeforeTickerMap = tickerMapLock.read {
+            beforeTickerMap
+        }
+
+        return loadedBeforeTickerMap
+    }
+
     suspend fun updateUpbitSymbolInfo() {
         coroutineScope {
             val upbitSymbolInfosDeferred = async { upbitClient.getSymbolInfo() }
