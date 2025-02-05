@@ -3,6 +3,7 @@ package com.kimpscan.api.exchange.service
 import com.kimpscan.api.exchange.client.BinanceClient
 import com.kimpscan.api.exchange.client.ExRateClient
 import com.kimpscan.api.exchange.client.UpbitClient
+import com.kimpscan.api.exchange.dto.Binance24hTickerDto
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
 import com.kimpscan.api.exchange.handler.WebSocketMessageHandler
@@ -25,7 +26,8 @@ class ExchangeService(
     private val exRateClient: ExRateClient,
     private val webSocketMessageHandler: WebSocketMessageHandler
 ) {
-    val exRateChecker = createExRateChecker()
+    val exRateGetter = createExRateGetter()
+    val binance24hTickerDtoMapGetter = createBinance24hTickerDtoMapGetter()
     val upbitSymbolInfoMap = mutableMapOf<String, UpbitSymbolInfoApiResDto>()
 
     // CoroutineScope 를 애플리케이션 라이프사이클에 맞게 관리
@@ -104,7 +106,8 @@ class ExchangeService(
 
             val upbitTickers = upbitDeferred.await()
             val binanceTickers = binanceDeferred.await()
-            val usdWonExRate = exRateChecker()
+            val usdWonExRate = exRateGetter()
+            val binance24hTickerDtoMap = binance24hTickerDtoMapGetter()
 
             val binanceTickerMap = binanceTickers.associate { it.symbol to it.price }
             val tickerMap = mutableMapOf<String, ExchangeTickerDto>()
@@ -120,19 +123,26 @@ class ExchangeService(
                     continue
                 }
 
-//                바이낸스 24시 기준 usdtOldPrice, usdtVolume, usdtOl dVolume
-//                https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints#24hr-ticker-price-change-statistics
-
                 val ticker = ExchangeTickerDto(
                     rootSymbol = convertRootSymbol(usdtSymbol = upbitSymbol),
                     korName = upbitSymbolInfoMap[upbitSymbol]?.koreanName ?: "",
-                    korPrice = roundDecimalPlaces(upbitTicker.tradePrice),
-                    korOldPrice = roundDecimalPlaces(
-                        upbitTicker.prevClosingPrice ?: 0.0
-                    ),
-                    korVolume = roundDecimalPlaces(upbitTicker.tradeVolume ?: 0.0),
-                    korOldVolume = roundDecimalPlaces(upbitTicker.accTradeVolume24h ?: 0.0),
-                    kimp = roundDecimalPlaces(kimp)
+                    wonPrice = roundDecimalPlaces(upbitTicker.tradePrice).toString(),
+                    wonOldPrice = roundDecimalPlaces(
+                        upbitTicker.prevClosingPrice
+                    ).toString(),
+                    won24hVolume = roundDecimalPlaces(upbitTicker.accTradeVolume24h).toString(),
+                    usdtPrice = roundDecimalPlaces(binancePrice.toDouble()).toString(),
+                    usdtOldPrice = binance24hTickerDtoMap[upbitSymbol]?.let {
+                        roundDecimalPlaces(
+                            it.openPrice.toDouble()
+                        ).toString()
+                    } ?: "0.0",
+                    usdt24hVolume = binance24hTickerDtoMap[upbitSymbol]?.let {
+                        roundDecimalPlaces(
+                            it.volume.toDouble()
+                        ).toString()
+                    } ?: "0.0",
+                    kimp = roundDecimalPlaces(kimp).toString(),
                 )
                 tickerMap[upbitSymbol] = ticker
             }
@@ -149,17 +159,17 @@ class ExchangeService(
         return usdtSymbol.replace("USDT", "")
     }
 
-    private fun roundDecimalPlaces(value: Double, scale: Int = 5): Double {
-        return BigDecimal(value).setScale(scale, RoundingMode.HALF_UP)
-            .toDouble()
+    private fun roundDecimalPlaces(realNumber: Double, scale: Int = 5): BigDecimal {
+        return BigDecimal(realNumber).setScale(scale, RoundingMode.HALF_UP)
     }
 
-    private fun createExRateChecker(): suspend () -> Double {
+    private fun createExRateGetter(): suspend () -> Double {
         var baseDate: LocalDateTime? = null
         var exRate = 0.0
 
         return suspend {
             coroutineScope {
+                // 하루에 한 번 갱신
                 val now = LocalDateTime.now().toLocalDate().atStartOfDay()
                 if (baseDate == null || now.isAfter(baseDate)) {
                     baseDate = now
@@ -168,6 +178,31 @@ class ExchangeService(
                     exRate = exRateDeferred.await()
                 }
                 exRate
+            }
+        }
+    }
+
+    private fun createBinance24hTickerDtoMapGetter(): suspend () -> MutableMap<String, Binance24hTickerDto> {
+        var baseDateTime: LocalDateTime? = null
+        val binance24hTickerDtoMap = mutableMapOf<String, Binance24hTickerDto>()
+
+        return suspend {
+            coroutineScope {
+                // 5초에 한 번 갱신
+                val now = LocalDateTime.now()
+                if (baseDateTime == null || now.isAfter(baseDateTime!!.plusSeconds(5))) {
+                    baseDateTime = now
+                    val binance24hDeferred = async { binanceClient.get24hTickers() }
+                    val binance24hTickerApiResDto = binance24hDeferred.await()
+                    for (row in binance24hTickerApiResDto) {
+                        binance24hTickerDtoMap[row.symbol] = Binance24hTickerDto(
+                            openPrice = roundDecimalPlaces(row.openPrice.toDouble()),
+                            volume = roundDecimalPlaces(row.volume.toDouble())
+                        )
+                    }
+                }
+
+                binance24hTickerDtoMap
             }
         }
     }
