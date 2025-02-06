@@ -36,11 +36,11 @@ class ExchangeService(
     private val scope = CoroutineScope(Dispatchers.Default + job) // 스코프 설정
 
     // SharedFlow 생성 (replay = 0은 과거 데이터를 저장하지 않음)
-    private val tickerMapSharedFlow = MutableSharedFlow<MutableMap<String, ExchangeTickerDto>>(replay = 0)
+    private val kimpTickerMapSharedFlow = MutableSharedFlow<MutableMap<String, ExchangeTickerDto>>(replay = 0)
 
-    // 직전 TickerMap
-    private val tickerMapLock = ReentrantReadWriteLock()
-    private var beforeTickerMap: MutableMap<String, ExchangeTickerDto> = mutableMapOf()
+    // 직전 kimpTickerMap
+    private val kimpTickerMapLock = ReentrantReadWriteLock()
+    private var beforeKimpTickerMap: MutableMap<String, ExchangeTickerDto> = mutableMapOf()
 
     @PostConstruct
     fun init() {
@@ -52,11 +52,11 @@ class ExchangeService(
 
     fun startBroadcastKimpLoop() {
         scope.launch {
-            tickerMapSharedFlow.collect { tickerMap ->
+            kimpTickerMapSharedFlow.collect { tickerMap ->
                 println("come in herer? startBroadcastKimpLoop")
                 println("webSocketMessageHandler.sessions" + webSocketMessageHandler.sessions)
                 println("tickerMap" + tickerMap)
-                val diffTickerMap = getDiffTickerMap(tickerMap)
+                val diffTickerMap = getDiffKimpTickerMap(tickerMap)
 
                 // ObjectMapper 인스턴스를 생성
                 val objectMapper = ObjectMapper()
@@ -71,8 +71,8 @@ class ExchangeService(
                 }
 
                 // 직전 TickerMap 갱신
-                tickerMapLock.write {
-                    beforeTickerMap = tickerMap
+                kimpTickerMapLock.write {
+                    beforeKimpTickerMap = tickerMap
                 }
             }
         }
@@ -88,13 +88,13 @@ class ExchangeService(
     fun publishKimp() {
         scope.launch {
             println("come in here? every 1 min")
-            tickerMapSharedFlow.emit(getKimp())
+            kimpTickerMapSharedFlow.emit(getKimp())
         }
     }
 
     fun getBeforeTickerMap(): MutableMap<String, ExchangeTickerDto> {
-        val loadedBeforeTickerMap = tickerMapLock.read {
-            beforeTickerMap
+        val loadedBeforeTickerMap = kimpTickerMapLock.read {
+            beforeKimpTickerMap
         }
 
         return loadedBeforeTickerMap
@@ -177,11 +177,11 @@ class ExchangeService(
         return BigDecimal(realNumber).setScale(scale, RoundingMode.HALF_UP)
     }
 
-    private fun getDiffTickerMap(currentTickerMap: MutableMap<String, ExchangeTickerDto>): MutableMap<String, Any> {
+    private fun getDiffKimpTickerMap(currentTickerMap: MutableMap<String, ExchangeTickerDto>): MutableMap<String, Any> {
         val result: MutableMap<String, Any> = mutableMapOf()
 
-        val loadedBeforeTickerMap = tickerMapLock.read {
-            beforeTickerMap
+        val loadedBeforeTickerMap = kimpTickerMapLock.read {
+            beforeKimpTickerMap
         }
 
         for ((symbol, currentTicker) in currentTickerMap) {
