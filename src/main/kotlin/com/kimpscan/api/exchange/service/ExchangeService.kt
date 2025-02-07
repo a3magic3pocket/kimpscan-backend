@@ -90,7 +90,7 @@ class ExchangeService(
     fun startProduceKimpMapLoop() {
         scope.launch {
             kimpTickerMapSharedFlow.collect { tickerMap ->
-                val kimpMap = getDiffKimpMap(tickerMap)
+                val kimpMap = tickerMap.mapValues { it.value.kimp }
                 kimpTickerProducer.sendTicker(kimpMap)
             }
         }
@@ -239,32 +239,6 @@ class ExchangeService(
 
             if (row.isNotEmpty()) {
                 result[symbol] = row
-            }
-        }
-
-        return result
-    }
-
-    private fun getDiffKimpMap(currentTickerMap: MutableMap<String, ExchangeTickerDto>): MutableMap<String, String> {
-        val result: MutableMap<String, String> = mutableMapOf()
-
-        val loadedBeforeTickerMap = kimpTickerMapLock.read {
-            beforeKimpTickerMap
-        }
-
-        for ((symbol, currentTicker) in currentTickerMap) {
-            val beforeTicker = loadedBeforeTickerMap[symbol]
-            if (beforeTicker == null) {
-                result[symbol] = currentTicker.kimp
-                continue
-            }
-
-            if (currentTicker.toString() == beforeTicker.toString()) {
-                continue
-            }
-
-            if (beforeTicker.kimp != currentTicker.kimp) {
-                result[symbol] = currentTicker.kimp
             }
         }
 
