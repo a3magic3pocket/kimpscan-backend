@@ -8,6 +8,7 @@ import com.kimpscan.api.exchange.dto.Binance24hTickerDto
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
 import com.kimpscan.api.exchange.handler.WebSocketMessageHandler
+import com.kimpscan.api.exchange.producer.KimpTickerProducer
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,7 +26,8 @@ class ExchangeService(
     private val upbitClient: UpbitClient,
     private val binanceClient: BinanceClient,
     private val exRateClient: ExRateClient,
-    private val webSocketMessageHandler: WebSocketMessageHandler
+    private val webSocketMessageHandler: WebSocketMessageHandler,
+    private val kimpTickerProducer: KimpTickerProducer,
 ) {
     private val exRateGetter = createExRateGetter()
     private val binance24hTickerDtoMapGetter = createBinance24hTickerDtoMapGetter()
@@ -44,13 +46,14 @@ class ExchangeService(
 
     @PostConstruct
     fun init() {
-        startBroadcastKimpLoop()
+        startBroadcastKimpTickerMapLoop()
+        startProduceKimpMapLoop()
         scope.launch {
             updateUpbitSymbolInfo()
         }
     }
 
-    fun startBroadcastKimpLoop() {
+    fun startBroadcastKimpTickerMapLoop() {
         scope.launch {
             kimpTickerMapSharedFlow.collect { tickerMap ->
                 println("come in herer? startBroadcastKimpLoop")
@@ -81,6 +84,15 @@ class ExchangeService(
     fun startCalculateKimpLoop() {
         scope.launch {
 
+        }
+    }
+
+    fun startProduceKimpMapLoop() {
+        scope.launch {
+            kimpTickerMapSharedFlow.collect { tickerMap ->
+                val kimpMap = getDiffKimpMap(tickerMap)
+                kimpTickerProducer.sendTicker(kimpMap)
+            }
         }
     }
 
@@ -227,6 +239,32 @@ class ExchangeService(
 
             if (row.isNotEmpty()) {
                 result[symbol] = row
+            }
+        }
+
+        return result
+    }
+
+    private fun getDiffKimpMap(currentTickerMap: MutableMap<String, ExchangeTickerDto>): MutableMap<String, String> {
+        val result: MutableMap<String, String> = mutableMapOf()
+
+        val loadedBeforeTickerMap = kimpTickerMapLock.read {
+            beforeKimpTickerMap
+        }
+
+        for ((symbol, currentTicker) in currentTickerMap) {
+            val beforeTicker = loadedBeforeTickerMap[symbol]
+            if (beforeTicker == null) {
+                result[symbol] = currentTicker.kimp
+                continue
+            }
+
+            if (currentTicker.toString() == beforeTicker.toString()) {
+                continue
+            }
+
+            if (beforeTicker.kimp != currentTicker.kimp) {
+                result[symbol] = currentTicker.kimp
             }
         }
 
