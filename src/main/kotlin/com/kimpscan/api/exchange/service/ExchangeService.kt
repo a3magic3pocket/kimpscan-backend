@@ -27,6 +27,7 @@ class ExchangeService(
     private val binanceClient: BinanceClient,
     private val exRateClient: ExRateClient,
     private val webSocketMessageHandler: WebSocketMessageHandler,
+    private val objectMapper: ObjectMapper,
     private val kimpTickerProducer: KimpTickerProducer,
 ) {
     private val exRateGetter = createExRateGetter()
@@ -62,7 +63,6 @@ class ExchangeService(
                 val diffTickerMap = getDiffKimpTickerMap(tickerMap)
 
                 // ObjectMapper 인스턴스를 생성
-                val objectMapper = ObjectMapper()
                 println("diffTickerMap++" + diffTickerMap)
 
                 // diffTickerMap 을 JSON 문자열로 변환
