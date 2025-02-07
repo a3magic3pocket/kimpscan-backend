@@ -42,6 +42,7 @@ dependencies {
 
 	// kafka
 	implementation("org.springframework.kafka:spring-kafka")
+	implementation("org.apache.kafka:kafka-streams")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }
 
