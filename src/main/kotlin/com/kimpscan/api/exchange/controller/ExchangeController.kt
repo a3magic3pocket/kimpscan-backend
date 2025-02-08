@@ -16,7 +16,7 @@ class ExchangeController(
     @GetMapping("/tickers/init")
     fun getInitTicker(): ResponseEntity<MutableMap<String, ExchangeTickerDto>> {
         return ResponseEntity.ok().body(
-            exchangeService.getBeforeTickerMap()
+            exchangeService.getBeforeKimpTickerMap()
         )
     }
 

@@ -7,8 +7,8 @@ import com.kimpscan.api.exchange.client.UpbitClient
 import com.kimpscan.api.exchange.dto.Binance24hTickerDto
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
-import com.kimpscan.api.exchange.handler.WebSocketMessageHandler
-import com.kimpscan.api.exchange.producer.KimpTickerProducer
+import com.kimpscan.api.exchange.handler.WebSocketKimpTickerHandler
+import com.kimpscan.api.exchange.kafka.KimpProducer
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,9 +26,9 @@ class ExchangeService(
     private val upbitClient: UpbitClient,
     private val binanceClient: BinanceClient,
     private val exRateClient: ExRateClient,
-    private val webSocketMessageHandler: WebSocketMessageHandler,
+    private val webSocketKimpTickerHandler: WebSocketKimpTickerHandler,
     private val objectMapper: ObjectMapper,
-    private val kimpTickerProducer: KimpTickerProducer,
+    private val kimpTickerProducer: KimpProducer,
 ) {
     private val exRateGetter = createExRateGetter()
     private val binance24hTickerDtoMapGetter = createBinance24hTickerDtoMapGetter()
@@ -58,7 +58,7 @@ class ExchangeService(
         scope.launch {
             kimpTickerMapSharedFlow.collect { tickerMap ->
                 println("come in herer? startBroadcastKimpLoop")
-                println("webSocketMessageHandler.sessions" + webSocketMessageHandler.sessions)
+                println("webSocketMessageHandler.sessions" + webSocketKimpTickerHandler.sessions)
                 println("tickerMap" + tickerMap)
                 val diffTickerMap = getDiffKimpTickerMap(tickerMap)
 
@@ -69,8 +69,8 @@ class ExchangeService(
                 val diffTickerJson = objectMapper.writeValueAsString(diffTickerMap)
 
                 // diffDto 를 모든 세션에 브로드캐스트
-                for (session in webSocketMessageHandler.sessions) {
-                    webSocketMessageHandler.broadcast(diffTickerJson)
+                for (session in webSocketKimpTickerHandler.sessions) {
+                    webSocketKimpTickerHandler.broadcast(diffTickerJson)
                 }
 
                 // 직전 TickerMap 갱신
@@ -104,7 +104,7 @@ class ExchangeService(
         }
     }
 
-    fun getBeforeTickerMap(): MutableMap<String, ExchangeTickerDto> {
+    fun getBeforeKimpTickerMap(): MutableMap<String, ExchangeTickerDto> {
         val loadedBeforeTickerMap = kimpTickerMapLock.read {
             beforeKimpTickerMap
         }

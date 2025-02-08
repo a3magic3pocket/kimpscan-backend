@@ -7,7 +7,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler
 
 // WebSocket 세션을 관리하고, 메시지를 처리하는 핸들러
 @Component
-class WebSocketMessageHandler : TextWebSocketHandler() {
+class WebSocketKimpTickerHandler : TextWebSocketHandler() {
 
     val sessions = mutableSetOf<WebSocketSession>()
 
