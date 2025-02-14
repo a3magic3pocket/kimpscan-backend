@@ -59,7 +59,7 @@ class KimpMovingAvgConsumer(
                 0.0
             }
 
-            result[symbol] = listOf(movingAvg5, movingAvg20)
+            result[symbol] = listOf(kimp.toDouble(), movingAvg5, movingAvg20)
 
             // kimpData[symbol] 출력
             println("kimpData[$symbol]: $kimpList")
