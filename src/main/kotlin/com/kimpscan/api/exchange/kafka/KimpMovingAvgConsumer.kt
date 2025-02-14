@@ -68,9 +68,7 @@ class KimpMovingAvgConsumer(
         isInit = true
 
         // 브로드 캐스트
-        webSocketKimpMovingAvgHandler.broadcast(
-            objectMapper.writeValueAsString(result)
-        )
+        webSocketKimpMovingAvgHandler.broadcast(result)
 
         println("record" + record.value())
         println("result" + result)

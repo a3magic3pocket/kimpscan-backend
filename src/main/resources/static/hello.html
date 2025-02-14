@@ -8,15 +8,38 @@
 </head>
 <body>
 <h1 id="message">로드 중...</h1>
-<button onclick="connect()">연결</button>
+<button onclick="connect()">김프 티커 연결</button>
+<button onclick="connectMovingAvg()">김프 이동평균 연결</button>
 </body>
 <script>
 
     // WebSocket 연결
     function connect() {
+        socket = new WebSocket('ws://localhost:8080/ws'); // WebSocket 엔드포인트로 연결
+        socket.onopen = function(event) {
+            console.log('Connected to WebSocket');
+        };
+
+        socket.onmessage = function(event) {
+            console.log('Received: ' + event.data);
+        };
+
+        socket.onerror = function(error) {
+            console.error('WebSocket Error: ' + error);
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket connection closed');
+        };
+    }
+
+    // Websocket movingAvg 연결
+    function connectMovingAvg() {
         socket = new WebSocket('ws://localhost:8080/ws/moving-avg'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
+
+            socket.send("XRPUSDT");
         };
 
         socket.onmessage = function(event) {
