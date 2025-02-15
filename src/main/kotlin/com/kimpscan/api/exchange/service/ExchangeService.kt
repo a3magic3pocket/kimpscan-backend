@@ -57,13 +57,7 @@ class ExchangeService(
     fun startBroadcastKimpTickerMapLoop() {
         scope.launch {
             kimpTickerMapSharedFlow.collect { tickerMap ->
-                println("come in herer? startBroadcastKimpLoop")
-                println("webSocketMessageHandler.sessions" + webSocketKimpTickerHandler.sessions)
-                println("tickerMap" + tickerMap)
                 val diffTickerMap = getDiffKimpTickerMap(tickerMap)
-
-                // ObjectMapper 인스턴스를 생성
-                println("diffTickerMap++" + diffTickerMap)
 
                 // diffTickerMap 을 JSON 문자열로 변환
                 val diffTickerJson = objectMapper.writeValueAsString(diffTickerMap)
@@ -93,7 +87,6 @@ class ExchangeService(
     @Scheduled(fixedRate = 1000)
     fun publishKimp() {
         scope.launch {
-            println("come in here? every 1 min")
             kimpTickerMapSharedFlow.emit(getKimp())
         }
     }

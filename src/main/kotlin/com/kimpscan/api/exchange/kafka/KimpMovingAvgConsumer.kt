@@ -38,7 +38,6 @@ class KimpMovingAvgConsumer(
         for ((symbol, beforeKimpTicker) in beforeKimpTickerMap) {
             // kimpData에 해당 symbol이 없으면 빈 리스트로 초기화
             val kimpList = kimpData.computeIfAbsent(symbol) { mutableListOf() }
-            println("IN consume kimpList"+ kimpList)
 
             // kimpList 크기가 20이면 첫 번째 요소를 제거
             if (kimpList.size == 20) {
@@ -70,31 +69,22 @@ class KimpMovingAvgConsumer(
                 movingAvgList = movingAvgList
             )
 
-            // kimpData[symbol] 출력
-            println("kimpData[$symbol]: $kimpList")
         }
 
         isInit = true
         
         // 브로드 캐스트
         webSocketKimpMovingAvgHandler.broadcast(result)
-        println("beforeKimpTickerMap"+beforeKimpTickerMap)
-
-        println("IN consume record" + record.value())
-        println("IN consume result" + result)
 
     }
 
     fun getBeforeKimpMovingAvg(symbol: String): MutableList<List<Double>> {
-        println("IN getBeforeKimpMovingAvg beforeKimpMovingAvgMap"+ beforeKimpMovingAvgMap)
         return beforeKimpMovingAvgMap[symbol] ?: mutableListOf()
     }
 
     private fun updateBeforeKimpMovingAvgMap(symbol: String, movingAvgList: List<Double>) {
         val beforeMovingAvgList = beforeKimpMovingAvgMap.getOrPut(symbol) { mutableListOf() }
         
-        println("IN updateBeforeKimpMovingAvgMap"+beforeKimpMovingAvgMap)
-
         // 리스트 크기가 7 이상이면 가장 오래된 값 제거
         if (beforeMovingAvgList.size >= 7) {
             beforeMovingAvgList.removeAt(0)
