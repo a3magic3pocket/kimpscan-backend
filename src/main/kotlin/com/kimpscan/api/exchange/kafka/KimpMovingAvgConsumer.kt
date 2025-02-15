@@ -3,7 +3,7 @@ package com.kimpscan.api.exchange.kafka
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kimpscan.api.constant.KafkaTopic
-import com.kimpscan.api.exchange.dto.ExchangeTickerDto
+import com.kimpscan.api.exchange.dto.KimpTickerDto
 import com.kimpscan.api.exchange.handler.WebSocketKimpMovingAvgHandler
 import com.kimpscan.api.exchange.service.ExchangeService
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -20,7 +20,7 @@ class KimpMovingAvgConsumer(
 
     // 김프를 저장하는 슬라이딩 윈도우 (종목별로 관리)
     private val kimpData: MutableMap<String, MutableList<Double>> = ConcurrentHashMap()
-    private var beforeKimpTickerMap = mutableMapOf<String, ExchangeTickerDto>()
+    private var beforeKimpTickerMap = mutableMapOf<String, KimpTickerDto>()
     private var beforeKimpMovingAvgMap = mutableMapOf<String, MutableList<List<Double>>>()
     private var isInit = false
 

@@ -1,6 +1,6 @@
 package com.kimpscan.api.exchange.client
 
-import com.kimpscan.api.exchange.dto.UsdWonExRateDto
+import com.kimpscan.api.exchange.dto.client.UsdWonExRateDto
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.json.Json
 import org.springframework.http.MediaType

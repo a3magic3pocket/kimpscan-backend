@@ -6,6 +6,7 @@ import com.kimpscan.api.exchange.client.ExRateClient
 import com.kimpscan.api.exchange.client.UpbitClient
 import com.kimpscan.api.exchange.dto.Binance24hTickerDto
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
+import com.kimpscan.api.exchange.dto.KimpTickerDto
 import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
 import com.kimpscan.api.exchange.handler.WebSocketKimpTickerHandler
 import com.kimpscan.api.exchange.kafka.KimpProducer
@@ -39,11 +40,11 @@ class ExchangeService(
     private val scope = CoroutineScope(Dispatchers.Default + job) // 스코프 설정
 
     // SharedFlow 생성 (replay = 0은 과거 데이터를 저장하지 않음)
-    private val kimpTickerMapSharedFlow = MutableSharedFlow<MutableMap<String, ExchangeTickerDto>>(replay = 0)
+    private val exchangeTickerSharedFlow = MutableSharedFlow<ExchangeTickerDto>(replay = 0)
 
     // 직전 kimpTickerMap
     private val kimpTickerMapLock = ReentrantReadWriteLock()
-    private var beforeKimpTickerMap: MutableMap<String, ExchangeTickerDto> = mutableMapOf()
+    private var beforeKimpTickerMap: MutableMap<String, KimpTickerDto> = mutableMapOf()
 
     @PostConstruct
     fun init() {
@@ -56,11 +57,15 @@ class ExchangeService(
 
     fun startBroadcastKimpTickerMapLoop() {
         scope.launch {
-            kimpTickerMapSharedFlow.collect { tickerMap ->
-                val diffTickerMap = getDiffKimpTickerMap(tickerMap)
+            exchangeTickerSharedFlow.collect { exchangeTicker ->
+                val diffTickerMap = getDiffKimpTickerMap(exchangeTicker.kimpTickerMap)
 
                 // diffTickerMap 을 JSON 문자열로 변환
-                val diffTickerJson = objectMapper.writeValueAsString(diffTickerMap)
+                val diffExchangeTickerDto = mapOf(
+                    ExchangeTickerDto::usdWonExRage.name to exchangeTicker.usdWonExRage,
+                    ExchangeTickerDto::kimpTickerMap.name to diffTickerMap,
+                )
+                val diffTickerJson = objectMapper.writeValueAsString(diffExchangeTickerDto)
 
                 // diffDto 를 모든 세션에 브로드캐스트
                 for (session in webSocketKimpTickerHandler.sessions) {
@@ -69,7 +74,7 @@ class ExchangeService(
 
                 // 직전 TickerMap 갱신
                 kimpTickerMapLock.write {
-                    beforeKimpTickerMap = tickerMap
+                    beforeKimpTickerMap = exchangeTicker.kimpTickerMap
                 }
             }
         }
@@ -77,9 +82,9 @@ class ExchangeService(
 
     fun startProduceKimpMapLoop() {
         scope.launch {
-            kimpTickerMapSharedFlow.collect { tickerMap ->
-                val kimpMap = tickerMap.mapValues { it.value.kimp }
-                kimpTickerProducer.sendTicker(kimpMap)
+            exchangeTickerSharedFlow.collect { exchangeTicker ->
+                val kimpTickerMap = exchangeTicker.kimpTickerMap.mapValues { it.value.kimp }
+                kimpTickerProducer.sendTicker(kimpTickerMap)
             }
         }
     }
@@ -87,11 +92,11 @@ class ExchangeService(
     @Scheduled(fixedRate = 1000)
     fun publishKimp() {
         scope.launch {
-            kimpTickerMapSharedFlow.emit(getKimp())
+            exchangeTickerSharedFlow.emit(getExchangeTicker())
         }
     }
 
-    fun getBeforeKimpTickerMap(): MutableMap<String, ExchangeTickerDto> {
+    fun getBeforeKimpTickerMap(): MutableMap<String, KimpTickerDto> {
         val loadedBeforeTickerMap = kimpTickerMapLock.read {
             beforeKimpTickerMap
         }
@@ -112,7 +117,7 @@ class ExchangeService(
         }
     }
 
-    suspend fun getKimp(): MutableMap<String, ExchangeTickerDto> {
+    suspend fun getExchangeTicker(): ExchangeTickerDto {
         return coroutineScope {
             val upbitDeferred = async { upbitClient.getTickers() }
             val binanceDeferred = async { binanceClient.getTickers() }
@@ -123,7 +128,7 @@ class ExchangeService(
             val binance24hTickerDtoMap = binance24hTickerDtoMapGetter()
 
             val binanceTickerMap = binanceTickers.associate { it.symbol to it.price }
-            val tickerMap = mutableMapOf<String, ExchangeTickerDto>()
+            val tickerMap = mutableMapOf<String, KimpTickerDto>()
 
             for (upbitTicker in upbitTickers) {
                 val upbitSymbol = convertSymbolUpbit(krwMarket = upbitTicker.market)
@@ -136,7 +141,7 @@ class ExchangeService(
                     continue
                 }
 
-                val ticker = ExchangeTickerDto(
+                val ticker = KimpTickerDto(
                     rootSymbol = convertRootSymbol(usdtSymbol = upbitSymbol),
                     korName = upbitSymbolInfoMap[upbitSymbol]?.koreanName ?: "",
                     wonPrice = roundDecimalPlaces(upbitTicker.tradePrice).toString(),
@@ -160,7 +165,10 @@ class ExchangeService(
                 tickerMap[upbitSymbol] = ticker
             }
 
-            return@coroutineScope tickerMap
+            return@coroutineScope ExchangeTickerDto(
+                usdWonExRage = usdWonExRate,
+                kimpTickerMap = tickerMap
+            )
         }
     }
 
@@ -176,7 +184,7 @@ class ExchangeService(
         return BigDecimal(realNumber).setScale(scale, RoundingMode.HALF_UP)
     }
 
-    private fun getDiffKimpTickerMap(currentTickerMap: MutableMap<String, ExchangeTickerDto>): MutableMap<String, Any> {
+    private fun getDiffKimpTickerMap(currentTickerMap: MutableMap<String, KimpTickerDto>): MutableMap<String, Any> {
         val result: MutableMap<String, Any> = mutableMapOf()
 
         val loadedBeforeTickerMap = kimpTickerMapLock.read {
@@ -197,31 +205,31 @@ class ExchangeService(
             val row = mutableMapOf<String, Any>()
 
             if (beforeTicker.rootSymbol != currentTicker.rootSymbol) {
-                row[ExchangeTickerDto::rootSymbol.name] = currentTicker.rootSymbol
+                row[KimpTickerDto::rootSymbol.name] = currentTicker.rootSymbol
             }
             if (beforeTicker.korName != currentTicker.korName) {
-                row[ExchangeTickerDto::korName.name] = currentTicker.korName
+                row[KimpTickerDto::korName.name] = currentTicker.korName
             }
             if (beforeTicker.wonPrice != currentTicker.wonPrice) {
-                row[ExchangeTickerDto::wonPrice.name] = currentTicker.wonPrice
+                row[KimpTickerDto::wonPrice.name] = currentTicker.wonPrice
             }
             if (beforeTicker.wonOldPrice != currentTicker.wonOldPrice) {
-                row[ExchangeTickerDto::wonOldPrice.name] = currentTicker.wonOldPrice
+                row[KimpTickerDto::wonOldPrice.name] = currentTicker.wonOldPrice
             }
             if (beforeTicker.won24hVolume != currentTicker.won24hVolume) {
-                row[ExchangeTickerDto::won24hVolume.name] = currentTicker.won24hVolume
+                row[KimpTickerDto::won24hVolume.name] = currentTicker.won24hVolume
             }
             if (beforeTicker.usdtPrice != currentTicker.usdtPrice) {
-                row[ExchangeTickerDto::usdtPrice.name] = currentTicker.usdtPrice
+                row[KimpTickerDto::usdtPrice.name] = currentTicker.usdtPrice
             }
             if (beforeTicker.usdtOldPrice != currentTicker.usdtOldPrice) {
-                row[ExchangeTickerDto::usdtOldPrice.name] = currentTicker.usdtOldPrice
+                row[KimpTickerDto::usdtOldPrice.name] = currentTicker.usdtOldPrice
             }
             if (beforeTicker.usdt24hVolume != currentTicker.usdt24hVolume) {
-                row[ExchangeTickerDto::usdt24hVolume.name] = currentTicker.usdt24hVolume
+                row[KimpTickerDto::usdt24hVolume.name] = currentTicker.usdt24hVolume
             }
             if (beforeTicker.kimp != currentTicker.kimp) {
-                row[ExchangeTickerDto::kimp.name] = currentTicker.kimp
+                row[KimpTickerDto::kimp.name] = currentTicker.kimp
             }
 
             if (row.isNotEmpty()) {

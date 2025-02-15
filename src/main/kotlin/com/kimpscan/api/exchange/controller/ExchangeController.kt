@@ -1,6 +1,6 @@
 package com.kimpscan.api.exchange.controller
 
-import com.kimpscan.api.exchange.dto.ExchangeTickerDto
+import com.kimpscan.api.exchange.dto.KimpTickerDto
 import com.kimpscan.api.exchange.kafka.KimpMovingAvgConsumer
 import com.kimpscan.api.exchange.service.ExchangeService
 import org.springframework.http.ResponseEntity
@@ -17,7 +17,7 @@ class ExchangeController(
 ) {
 
     @GetMapping("/tickers/init")
-    fun getInitTicker(): ResponseEntity<MutableMap<String, ExchangeTickerDto>> {
+    fun getInitTicker(): ResponseEntity<MutableMap<String, KimpTickerDto>> {
         return ResponseEntity.ok().body(
             exchangeService.getBeforeKimpTickerMap()
         )
