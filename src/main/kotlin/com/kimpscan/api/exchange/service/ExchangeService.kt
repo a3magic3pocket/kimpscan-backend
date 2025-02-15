@@ -81,12 +81,6 @@ class ExchangeService(
         }
     }
 
-    fun startCalculateKimpLoop() {
-        scope.launch {
-
-        }
-    }
-
     fun startProduceKimpMapLoop() {
         scope.launch {
             kimpTickerMapSharedFlow.collect { tickerMap ->

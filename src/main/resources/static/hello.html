@@ -10,6 +10,7 @@
 <h1 id="message">로드 중...</h1>
 <button onclick="connect()">김프 티커 연결</button>
 <button onclick="connectMovingAvg()">김프 이동평균 연결</button>
+<button id="init-moving-avg">최초 김프 이동평균 api 호출 </button>
 </body>
 <script>
 
@@ -54,6 +55,18 @@
             console.log('WebSocket connection closed');
         };
     }
+
+    // 버튼 클릭 시 API 호출
+    document.getElementById('init-moving-avg').addEventListener('click', async function() {
+      try {
+        const response = await fetch('http://localhost:8080/exchange/moving-avg/init?symbol=XRPUSDT'); // 실제 API URL로 변경
+        const data = await response.json();
+        console.log("data", data)
+      } catch (error) {
+        // 오류가 발생하면 화면에 오류 메시지 표시
+        console.log("error", error)
+      }
+    });
 
 // DOMContentLoaded 이벤트를 사용하여 DOM이 로드된 후 코드 실행
 document.addEventListener("DOMContentLoaded", function() {
