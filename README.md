@@ -1,5 +1,10 @@
 # kimpscan
 
+## 로컬 실행 명령 환경변수 
+- ```bash
+    -Dspring.profiles.active=dev -Dspring.config.location=classpath:/application.yml
+    ```
+
 ## kafka 설정
 - ```bash
   ## ticker 토픽 생성
