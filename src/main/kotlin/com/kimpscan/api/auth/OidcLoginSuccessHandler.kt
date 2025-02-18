@@ -69,15 +69,15 @@ class OidcLoginSuccessHandler(
                 maxAge = jwtConfig.refreshExpirationTime
             }
 
-            val dummyAccessTokenCookie = Cookie("dummy-access-token", "").apply {
+            val dummyAccessTokenCookie = Cookie("dummy-access-token", "1").apply {
                 isHttpOnly = false
                 path = "/"
                 secure = false
-                maxAge = jwtConfig.refreshExpirationTime
+                maxAge = jwtConfig.accessExpirationTime
             }
 
-            val dummyRefreshTokenCookie = Cookie("dummy-refresh-token", "").apply {
-                isHttpOnly = true
+            val dummyRefreshTokenCookie = Cookie("dummy-refresh-token", "2").apply {
+                isHttpOnly = false
                 path = "/"
                 secure = false
                 maxAge = jwtConfig.refreshExpirationTime
@@ -90,7 +90,7 @@ class OidcLoginSuccessHandler(
                 dummyAccessTokenCookie,
                 dummyRefreshTokenCookie
             )) {
-                response.addCookie(refreshTokenCookie)
+                response.addCookie(cookie)
             }
 
             // 응답 설정
