@@ -43,9 +43,15 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-	// login
+	// auth
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("io.jsonwebtoken:jjwt-api:0.11.5")   // jjwt API
+	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")  // jjwt 구현체
+	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5") // Jackson 지원 (JSON 처리)
+
+	// db
+	implementation("org.mariadb.jdbc:mariadb-java-client")
 }
 
 kotlin {

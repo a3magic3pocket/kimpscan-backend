@@ -1,4 +1,4 @@
-package com.kimpscan.api.config
+package com.kimpscan.api.global.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

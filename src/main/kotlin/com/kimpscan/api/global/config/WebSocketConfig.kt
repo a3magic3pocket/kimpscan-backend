@@ -1,4 +1,4 @@
-package com.kimpscan.api.config
+package com.kimpscan.api.global.config
 
 import com.kimpscan.api.exchange.handler.WebSocketKimpMovingAvgHandler
 import com.kimpscan.api.exchange.handler.WebSocketKimpTickerHandler

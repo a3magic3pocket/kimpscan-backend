@@ -3,18 +3,29 @@ spring:
     active: dev
     include: oauth
   datasource:
-    url: jdbc:h2:mem:testdb      # H2 인메모리 DB URL
-    driver-class-name: org.h2.Driver
-    username: sa                 # 기본 사용자
-    password:                    # 기본 비밀번호 (빈 값)
+    include: oauth
+    url: jdbc:mariadb://localhost:3306/kimpscan
+    username: root
+    password: my-mariadb-root-password
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10 # 최대 커넥션 풀 크기 설정 (옵션)
+  #  datasource:
+  #    url: jdbc:h2:mem:testdb      # H2 인메모리 DB URL
+  #    driver-class-name: org.h2.Driver
+  #    username: sa                 # 기본 사용자
+  #    password:                    # 기본 비밀번호 (빈 값)
+  #  h2:
+  #    console:
+  #      enabled: true              # H2 콘솔 활성화
+  #      path: /h2-console          # H2 콘솔 접속 경로
   jpa:
     hibernate:
-      ddl-auto: create-drop      # 애플리케이션 시작 시 테이블 생성, 종료 시 삭제
+      ddl-auto: none # 아무 것도 하지 않도록 설정
     show-sql: true               # 실행되는 SQL 로그 출력
-  h2:
-    console:
-      enabled: true              # H2 콘솔 활성화
-      path: /h2-console          # H2 콘솔 접속 경로
+    properties:
+      hibernate:
+        format_sql: true # SQL 포맷을 읽기 쉽게 출력
   kafka:
     bootstrap-servers: "localhost:9092"
     producer:
@@ -27,6 +38,11 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+
+jwt:
+  secret-key: "aGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQ="
+  access-expiration-time: 3600
+  refresh-expiration-time: 3600
 
 server:
   compression:

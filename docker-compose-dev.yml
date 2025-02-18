@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  db:
+    image: mariadb:lts-noble
+    container_name: db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: my-mariadb-root-password
+    volumes:
+      - db_data:/var/lib/mysql
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - docker_net
+    mem_limit: 256m # 최소 256MB RAM 보장
+
   kafka:
     image: bitnami/kafka:3.9.0
     container_name: kafka
@@ -24,18 +40,20 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=false # 자동 토픽 생성 막기
       - KAFKA_CFG_LOG_RETENTION_HOURS=1 # 세그먼트 파일의 삭제 주기: 1시간
 
-
+    mem_limit: 256m # 최소 256MB RAM 보장
     ports:
       - "9092:9092"  # Kafka 외부 접속 포트
     volumes:
       - kafka_data:/bitnami/kafka
     networks:
-      - kafka_network
+      - docker_net
 
 networks:
-  kafka_network:
+  docker_net:
     driver: bridge
 
 volumes:
   kafka_data:
+    driver: local
+  db_data:
     driver: local
