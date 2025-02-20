@@ -1,8 +1,10 @@
 package com.kimpscan.api.global.config
 
+import com.kimpscan.api.auth.KimpscanOAuth2FailureHandler
 import com.kimpscan.api.auth.KimpscanOAuth2UserService
 import com.kimpscan.api.auth.OidcLoginSuccessHandler
 import com.kimpscan.api.auth.KimpscanOidcUserService
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -11,14 +13,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(OAuth2Properties::class)
 class SecurityConfig(
+    private val corsConfigurationSource: CorsConfigurationSource,
     private val kimpscanOAuth2UserService: KimpscanOAuth2UserService,
     private val kimpscanOidcUserService: KimpscanOidcUserService,
     private val oidcLoginSuccessHandler: OidcLoginSuccessHandler,
+    private val kimpscanOAuth2FailureHandler: KimpscanOAuth2FailureHandler,
 ) {
 
     @Bean
@@ -31,7 +39,10 @@ class SecurityConfig(
                     .requestMatchers("/auth/success").permitAll()
                     .requestMatchers("/hello.html").permitAll()
                     .requestMatchers("/auth.html").permitAll()
-                    .anyRequest().authenticated()
+                    .requestMatchers("/auth2.html").permitAll()
+                    .requestMatchers("/login/oauth2/**").permitAll()
+//                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
             }
             .exceptionHandling { e ->
                 e.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
@@ -41,13 +52,30 @@ class SecurityConfig(
             }
             .oauth2Login { l ->
                 l.userInfoEndpoint{ userInfo ->
-                    userInfo.userService(kimpscanOAuth2UserService)
+//                    userInfo.userService(kimpscanOAuth2UserService)
                     userInfo.oidcUserService(kimpscanOidcUserService)
                 }
                 l.successHandler(oidcLoginSuccessHandler)
+                l.failureHandler(kimpscanOAuth2FailureHandler)
             }
+
+        http.cors { it.configurationSource(corsConfigurationSource()) }
 
         return http.build()
     }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val corsConfiguration = CorsConfiguration()
+        corsConfiguration.allowedOrigins = listOf("http://localhost:63342")  // 허용할 도메인
+        corsConfiguration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 허용할 HTTP 메소드
+        corsConfiguration.allowedHeaders = listOf("Authorization", "Content-Type")  // 허용할 헤더
+        corsConfiguration.allowCredentials = true  // 쿠키와 인증 정보를 포함할 수 있도록 허용
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", corsConfiguration)  // 모든 요청에 대해 CORS 설정
+        return source
+    }
+
 
 }

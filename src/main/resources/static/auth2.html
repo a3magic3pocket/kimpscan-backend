@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Identity Services Login</title>
+    <script src="https://accounts.google.com/gsi/client" onload="console.log('TODO: add onload function')">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<button onclick="client.requestCode();">Authorize with Google</button>
+
+<script>
+    const client = google.accounts.oauth2.initCodeClient({
+      client_id: '868229652830-ect29rap28q3sq82obo9q4vfnc6kkm8r.apps.googleusercontent.com',
+      scope: 'openid profile',
+      state: 'asdfasdfasdjkfljawklejfklasjdfkla',
+      ux_mode: 'popup',
+      callback: (response) => {
+        const code_receiver_uri = 'http://localhost:8080/login/oauth2/code/google/web'
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', code_receiver_uri, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        // Set custom header for CRSF
+        xhr.setRequestHeader('X-Requested-With', 'XmlHttpRequest');
+
+        // Enable credentials (cookies, HTTP authentication, etc.)
+        xhr.withCredentials = true;
+
+        xhr.onload = function() {
+          console.log('Auth code response: ' + xhr.responseText);
+        };
+        xhr.send('code=' + response.code);
+        console.log("response", response)
+        console.log("response.code", response.code)
+
+
+        /*
+        console.log("response", response)
+        console.log("response", response.code)
+        axios.get(`http://localhost:8080/login/oauth2/code/google/authorization-code`,
+        {
+            params: response,
+            withCredentials: true
+        })
+            .then(function(response) {
+                console.log('응답 데이터:', response.data);
+            })
+            .catch(function(error) {
+                console.error('에러 발생:', error);
+            });
+            */
+
+
+
+        /*
+        const code_receiver_uri = "http://localhost:8080/login/oauth2/code/google"
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', code_receiver_uri, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        // Set custom header for CRSF
+        xhr.setRequestHeader('X-Requested-With', 'XmlHttpRequest');
+        xhr.onload = function() {
+          console.log('Auth code response: ' + xhr.responseText);
+        };
+        xhr.send('code=' + response.code);
+        */
+      },
+    });
+</script>
+</body>
+</html>

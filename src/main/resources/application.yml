@@ -38,6 +38,11 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 jwt:
   secret-key: "aGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQ="
@@ -57,3 +62,7 @@ server:
 #logging:
 #  level:
 #    org.springframework.boot.autoconfigure: DEBUG
+#logging:
+#  level:
+#    org.springframework.security: DEBUG
+
