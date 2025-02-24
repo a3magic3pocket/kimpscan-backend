@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -27,22 +28,23 @@ class SecurityConfig(
     private val kimpscanOidcUserService: KimpscanOidcUserService,
     private val oidcLoginSuccessHandler: OidcLoginSuccessHandler,
     private val kimpscanOAuth2FailureHandler: KimpscanOAuth2FailureHandler,
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
 
     @Bean
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers("/exchange/**").permitAll()
                     .requestMatchers("/auth/success").permitAll()
-                    .requestMatchers("/hello.html").permitAll()
+                    .requestMatchers("/hello.html").authenticated()
                     .requestMatchers("/auth.html").permitAll()
                     .requestMatchers("/auth2.html").permitAll()
                     .requestMatchers("/login/oauth2/**").permitAll()
-//                    .anyRequest().authenticated()
-                    .anyRequest().permitAll()
+                    .anyRequest().authenticated()
             }
             .exceptionHandling { e ->
                 e.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
@@ -51,15 +53,14 @@ class SecurityConfig(
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .oauth2Login { l ->
-                l.userInfoEndpoint{ userInfo ->
+                l.userInfoEndpoint { userInfo ->
 //                    userInfo.userService(kimpscanOAuth2UserService)
                     userInfo.oidcUserService(kimpscanOidcUserService)
                 }
                 l.successHandler(oidcLoginSuccessHandler)
                 l.failureHandler(kimpscanOAuth2FailureHandler)
             }
-
-        http.cors { it.configurationSource(corsConfigurationSource()) }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)  // JWT 필터 등록
 
         return http.build()
     }
