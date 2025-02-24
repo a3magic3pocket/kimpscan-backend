@@ -44,11 +44,6 @@ spring:
       enabled: true
       force: true
 
-jwt:
-  secret-key: "aGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQ="
-  access-expiration-time: 3600
-  refresh-expiration-time: 3600
-
 server:
   compression:
     enabled: true
@@ -58,6 +53,16 @@ server:
       - text/html
       - text/plain
     min-response-size: 1024
+
+app:
+  auth:
+    success-url: "http://localhost:8080/auth-success.html"
+    failure-url: "http://localhost:8080/auth-failure.html"
+  jwt:
+    secret-key: "aGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQtaGVsbG8td29ybGQ="
+    access-expiration-time: 3600
+    refresh-expiration-time: 3600
+
 
 #logging:
 #  level:

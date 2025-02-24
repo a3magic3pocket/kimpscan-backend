@@ -1,4 +1,4 @@
-package com.kimpscan.api.auth
+package com.kimpscan.api.auth.dto
 
 data class AuthTokenDto (
     val accessToken: String,

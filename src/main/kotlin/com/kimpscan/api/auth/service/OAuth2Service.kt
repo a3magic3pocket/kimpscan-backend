@@ -1,8 +1,8 @@
-package com.kimpscan.api.auth
+package com.kimpscan.api.auth.service
 
-import com.kimpscan.api.auth.OAuthController.Companion.GOOGLE
-import com.kimpscan.api.auth.dto.GoogleTokenRes
-import com.kimpscan.api.auth.dto.GoogleUserRes
+import com.kimpscan.api.auth.controller.OAuthController.Companion.GOOGLE
+import com.kimpscan.api.auth.dto.GoogleTokenResDto
+import com.kimpscan.api.auth.dto.GoogleUserResDto
 import com.kimpscan.api.global.config.OAuth2Properties
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
@@ -17,7 +17,7 @@ class OAuth2Service(
     private val oAuth2Properties: OAuth2Properties,
 ) {
 
-    suspend fun getGoogleAccessToken(code: String, redirectUrl: String): GoogleTokenRes? {
+    suspend fun getGoogleAccessToken(code: String, redirectUrl: String): GoogleTokenResDto? {
         val googleRegistration = oAuth2Properties.registration[GOOGLE] ?: throw NotFoundException()
         val googleProvider = oAuth2Properties.provider[GOOGLE] ?: throw NotFoundException()
 
@@ -32,18 +32,18 @@ class OAuth2Service(
                         "&grant_type=authorization_code"
             )
             .retrieve()
-            .bodyToMono(GoogleTokenRes::class.java)
+            .bodyToMono(GoogleTokenResDto::class.java)
             .awaitSingle()
     }
 
-    suspend fun getGoogleUser(accessToken: String): GoogleUserRes? {
+    suspend fun getGoogleUser(accessToken: String): GoogleUserResDto? {
         val googleProvider = oAuth2Properties.provider[GOOGLE] ?: throw NotFoundException()
 
         return webClient.get()
             .uri(googleProvider.userInfoUri)
             .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
             .retrieve()
-            .bodyToMono(GoogleUserRes::class.java)
+            .bodyToMono(GoogleUserResDto::class.java)
             .awaitSingle()
     }
 }

@@ -1,9 +1,9 @@
 package com.kimpscan.api.global.config
 
-import com.kimpscan.api.auth.KimpscanOAuth2FailureHandler
-import com.kimpscan.api.auth.KimpscanOAuth2UserService
-import com.kimpscan.api.auth.OidcLoginSuccessHandler
-import com.kimpscan.api.auth.KimpscanOidcUserService
+import com.kimpscan.api.auth.handler.KimpscanOAuth2FailureHandler
+import com.kimpscan.api.auth.service.KimpscanOAuth2UserService
+import com.kimpscan.api.auth.handler.OidcLoginSuccessHandler
+import com.kimpscan.api.auth.service.KimpscanOidcUserService
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

@@ -1,4 +1,4 @@
-package com.kimpscan.api.auth
+package com.kimpscan.api.auth.handler
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

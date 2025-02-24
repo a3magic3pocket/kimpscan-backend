@@ -1,14 +1,12 @@
-package com.kimpscan.api.auth
+package com.kimpscan.api.auth.handler
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.kimpscan.api.auth.service.AuthService
 import com.kimpscan.api.constant.Auth
+import com.kimpscan.api.global.config.AuthConfig
 import com.kimpscan.api.global.config.JwtConfig
-import com.kimpscan.api.user.entity.User
-import com.kimpscan.api.user.repository.UserRepository
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
@@ -16,11 +14,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class OidcLoginSuccessHandler(
-    private val userRepository: UserRepository,
-    private val jwtProvider: JwtProvider,
     private val jwtConfig: JwtConfig,
-    private val objectMapper: ObjectMapper,
+    private val authConfig: AuthConfig,
+    private val authService: AuthService,
 ) : AuthenticationSuccessHandler {
+
     // 로그인 성공 후 호출되는 메서드
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
@@ -29,29 +27,19 @@ class OidcLoginSuccessHandler(
     ) {
         if (authentication.isAuthenticated) {
             val oidcUser = authentication.principal as OidcUser
-
-            // kimpscan 유저 로드
-            var user = userRepository.findByOauth2SubAndIsActive(
-                oauth2Sub = oidcUser.subject,
-            )
-            if (user == null) {
-                val provider = when {
-                    oidcUser.issuer.toString().contains(Auth.PROVIDER_GOOGLE) -> Auth.PROVIDER_GOOGLE
-                    else -> ""
-                }
-                val newUser = User(
-                    name = oidcUser.fullName,
-                    oauth2Sub = oidcUser.subject,
-                    oauth2Provider = provider
-                )
-
-                user = userRepository.save(newUser)
+            val provider = when {
+                oidcUser.issuer.toString().contains(Auth.PROVIDER_GOOGLE) -> Auth.PROVIDER_GOOGLE
+                else -> ""
             }
 
-            // jwt 발급
-            val authTokenDto = jwtProvider.createToken(
-                sub = user.id.toString()
+            // kimpscan 유저 로드
+            val user = authService.getUser(
+                sub = oidcUser.subject,
+                provider = provider,
+                name = oidcUser.fullName
             )
+
+            val authTokenDto = authService.getAuthTokenDto(sub = user.id.toString())
 
             // 쿠키 설정
             // production 환경에서는 secure = true 이어야 함
@@ -93,15 +81,11 @@ class OidcLoginSuccessHandler(
                 response.addCookie(cookie)
             }
 
-            // 응답 설정
-            response.status = HttpServletResponse.SC_OK
-            response.contentType = MediaType.APPLICATION_JSON_VALUE
-
-            objectMapper.writeValue(response.outputStream, authTokenDto)
+            response.sendRedirect(authConfig.successUrl)
             return
         }
 
         // OIDC 인증 실패
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "unauthorized access")
+        response.sendRedirect(authConfig.failureUrl)
     }
 }

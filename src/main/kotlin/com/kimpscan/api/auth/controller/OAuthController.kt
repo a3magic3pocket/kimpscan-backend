@@ -1,5 +1,7 @@
-package com.kimpscan.api.auth
+package com.kimpscan.api.auth.controller
 
+import com.kimpscan.api.auth.service.AuthService
+import com.kimpscan.api.auth.service.OAuth2Service
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

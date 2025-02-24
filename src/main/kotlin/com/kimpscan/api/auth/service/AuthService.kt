@@ -1,5 +1,7 @@
-package com.kimpscan.api.auth
+package com.kimpscan.api.auth.service
 
+import com.kimpscan.api.auth.dto.AuthTokenDto
+import com.kimpscan.api.auth.JwtProvider
 import com.kimpscan.api.user.entity.User
 import com.kimpscan.api.user.repository.UserRepository
 import org.springframework.stereotype.Service

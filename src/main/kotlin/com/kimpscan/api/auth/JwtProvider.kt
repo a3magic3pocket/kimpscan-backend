@@ -1,5 +1,6 @@
 package com.kimpscan.api.auth
 
+import com.kimpscan.api.auth.dto.AuthTokenDto
 import com.kimpscan.api.global.config.JwtConfig
 import com.kimpscan.api.global.extension.toIsoUtcString
 import io.jsonwebtoken.SignatureAlgorithm

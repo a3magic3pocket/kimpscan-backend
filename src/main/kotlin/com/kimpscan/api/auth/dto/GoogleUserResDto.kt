@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GoogleUserRes (
+data class GoogleUserResDto (
 
     @SerialName("id")
     val id: String,

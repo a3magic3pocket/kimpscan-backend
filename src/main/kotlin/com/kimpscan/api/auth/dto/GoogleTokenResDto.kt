@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class GoogleTokenRes(
+data class GoogleTokenResDto(
 
     @SerialName("access_token")
     val accessToken: String,
