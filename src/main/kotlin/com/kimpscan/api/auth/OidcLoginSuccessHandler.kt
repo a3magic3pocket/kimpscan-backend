@@ -49,20 +49,20 @@ class OidcLoginSuccessHandler(
             }
 
             // jwt 발급
-            val authTokensDto = jwtProvider.createToken(
+            val authTokenDto = jwtProvider.createToken(
                 sub = user.id.toString()
             )
 
             // 쿠키 설정
             // production 환경에서는 secure = true 이어야 함
-            val accessTokenCookie = Cookie(Auth.ACCESS_TOKEN_COOKIE_NAME, authTokensDto.accessToken).apply {
+            val accessTokenCookie = Cookie(Auth.ACCESS_TOKEN_COOKIE_NAME, authTokenDto.accessToken).apply {
                 isHttpOnly = true
                 path = "/"
                 secure = false
                 maxAge = jwtConfig.accessExpirationTime
             }
 
-            val refreshTokenCookie = Cookie(Auth.REFRESH_TOKEN_COOKIE_NAME, authTokensDto.refreshToken).apply {
+            val refreshTokenCookie = Cookie(Auth.REFRESH_TOKEN_COOKIE_NAME, authTokenDto.refreshToken).apply {
                 isHttpOnly = true
                 path = "/"
                 secure = false
@@ -97,7 +97,7 @@ class OidcLoginSuccessHandler(
             response.status = HttpServletResponse.SC_OK
             response.contentType = MediaType.APPLICATION_JSON_VALUE
 
-            objectMapper.writeValue(response.outputStream, authTokensDto)
+            objectMapper.writeValue(response.outputStream, authTokenDto)
             return
         }
 

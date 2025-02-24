@@ -13,7 +13,7 @@ class JwtProvider(
     private val jwtConfig: JwtConfig
 ) {
     // JWT 토큰 생성
-    fun createToken(sub: String): AuthTokensDto {
+    fun createToken(sub: String): AuthTokenDto {
         val now = Date()
         val accessExpiryDate = Date(now.time + jwtConfig.accessExpirationTime * 1000)  // 만료 시간을 밀리초로 변환
         val refreshExpiryDate = Date(now.time + jwtConfig.refreshExpirationTime * 1000)  // 만료 시간을 밀리초로 변환
@@ -35,7 +35,7 @@ class JwtProvider(
             .signWith(key)
             .compact()
 
-        return AuthTokensDto(
+        return AuthTokenDto(
             accessToken = accessToken,
             refreshToken = refreshToken,
             accessTokenExpiry = accessExpiryDate.toIsoUtcString(),

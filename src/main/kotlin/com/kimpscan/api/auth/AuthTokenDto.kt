@@ -1,6 +1,6 @@
 package com.kimpscan.api.auth
 
-data class AuthTokensDto (
+data class AuthTokenDto (
     val accessToken: String,
     val refreshToken: String,
     val accessTokenExpiry: String,
