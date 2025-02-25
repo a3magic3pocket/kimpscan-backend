@@ -29,3 +29,5 @@ build
 .idea
 out
 application-oauth.yml
+resources-production
+

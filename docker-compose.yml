@@ -1,0 +1,45 @@
+version: '3.8'  # Docker Compose file version
+
+services:
+  db:
+    image: mariadb:lts-noble
+    ports:
+      - "3306:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: my-mariadb-root-password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - docker_net
+    deploy:
+      replicas: 1  # Swarm 모드에서 서비스의 복제본 수를 설정 (여기서는 1개로 설정)
+      resources:
+        limits:
+          memory: 256M  # 메모리 제한
+#      restart_policy:
+#        condition: on-failure  # 실패 시 재시작 정책
+  kimpscan:
+    image: kimpscan:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - docker_net
+    deploy:
+      replicas: 2  # Swarm 모드에서 서비스의 복제본 수를 설정 (여기서는 1개로 설정)
+      resources:
+        limits:
+          memory: 256M  # 메모리 제한
+      restart_policy:
+        condition: on-failure  # 실패 시 재시작 정책
+
+networks:
+  docker_net:
+    driver: overlay
+
+volumes:
+  db_data:
+    driver: local
+
