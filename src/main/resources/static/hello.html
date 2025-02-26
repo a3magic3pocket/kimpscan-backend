@@ -59,7 +59,7 @@
     // 버튼 클릭 시 API 호출
     document.getElementById('init-moving-avg').addEventListener('click', async function() {
       try {
-        const response = await fetch('http://localhost:8080/exchange/moving-avg/init?symbol=XRPUSDT'); // 실제 API URL로 변경
+        const response = await fetch('http://localhost:8080/exchange/moving-avgs/init?symbol=XRPUSDT'); // 실제 API URL로 변경
         const data = await response.json();
         console.log("data", data)
       } catch (error) {

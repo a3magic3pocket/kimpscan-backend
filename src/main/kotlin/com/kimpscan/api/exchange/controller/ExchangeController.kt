@@ -15,14 +15,14 @@ class ExchangeController(
 ) {
 
     @GetMapping("/tickers/init")
-    fun getInitTicker(): ResponseEntity<MutableMap<String, KimpTickerDto>> {
+    fun getInitKimpTickerMap(): ResponseEntity<MutableMap<String, KimpTickerDto>> {
         return ResponseEntity.ok().body(
             exchangeService.getBeforeKimpTickerMap()
         )
     }
 
-    @GetMapping("/moving-avg/init")
-    fun getInitMovingAvg(
+    @GetMapping("/moving-avgs/init")
+    fun getInitKimpMovingAvgMap(
         @RequestParam(name = "symbol") symbol: String
     ): ResponseEntity<MutableList<List<Double>>> {
         return ResponseEntity.ok().body(
