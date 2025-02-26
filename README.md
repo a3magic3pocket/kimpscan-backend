@@ -32,6 +32,9 @@
   
 ## 도커 스택
 - ```bash
+    # docker kimpscan 이미지 삭제
+    docker rmi kimpscan:latest
+  
     # docker image 빌드
     docker build -t kimpscan .
   
@@ -43,6 +46,12 @@
   
     # 서비스 로그 확인
     docker service logs kimpscan_kimpscan
+  
+    # docker stack 제거
+    docker stack rm kimpscan
+  
+    # docker 서비스 상태 확인
+    docker stats
   
     # mac, colima 환경에서 도커 스웜 주소 알아내기
     # - 아래 명령 후 address 에서 노출되는 IP

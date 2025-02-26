@@ -30,6 +30,7 @@ class ExchangeService(
     private val webSocketKimpTickerHandler: WebSocketKimpTickerHandler,
     private val objectMapper: ObjectMapper,
     private val kimpTickerProducer: KimpProducer,
+    private val serviceLeaderLockService: ServiceLeaderLockService,
 ) {
     private val exRateGetter = createExRateGetter()
     private val binance24hTickerDtoMapGetter = createBinance24hTickerDtoMapGetter()
@@ -91,8 +92,11 @@ class ExchangeService(
 
     @Scheduled(fixedRate = 1000)
     fun publishKimp() {
-        scope.launch {
-            exchangeTickerSharedFlow.emit(getExchangeTicker())
+        val isAcquired = serviceLeaderLockService.tryToAcquireLock()
+        if (isAcquired) {
+            scope.launch {
+                exchangeTickerSharedFlow.emit(getExchangeTicker())
+            }
         }
     }
 
