@@ -2,6 +2,7 @@ package com.kimpscan.api.exchange.kafka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kimpscan.api.constant.KafkaTopic
+import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 
@@ -11,8 +12,8 @@ class KimpProducer(
     private val kafkaTemplate: KafkaTemplate<String, String>
 ) {
 
-    fun sendTicker(kimpMap: Map<String, String>) {
-        val message = objectMapper.writeValueAsString(kimpMap)
+    fun sendTicker(exchangeTickerDto: ExchangeTickerDto) {
+        val message = objectMapper.writeValueAsString(exchangeTickerDto)
 
         kafkaTemplate.send(KafkaTopic.TICKER, message)
     }

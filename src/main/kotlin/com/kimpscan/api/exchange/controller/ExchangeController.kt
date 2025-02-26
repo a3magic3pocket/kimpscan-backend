@@ -1,7 +1,6 @@
 package com.kimpscan.api.exchange.controller
 
 import com.kimpscan.api.exchange.dto.KimpTickerDto
-import com.kimpscan.api.exchange.kafka.KimpMovingAvgConsumer
 import com.kimpscan.api.exchange.service.ExchangeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/exchange")
 class ExchangeController(
     private val exchangeService: ExchangeService,
-    private val kimpMovingAvgConsumer: KimpMovingAvgConsumer,
 ) {
 
     @GetMapping("/tickers/init")
@@ -28,7 +26,7 @@ class ExchangeController(
         @RequestParam(name = "symbol") symbol: String
     ): ResponseEntity<MutableList<List<Double>>> {
         return ResponseEntity.ok().body(
-            kimpMovingAvgConsumer.getBeforeKimpMovingAvg(symbol.uppercase())
+            exchangeService.getBeforeKimpMovingAvg(symbol.uppercase())
         )
     }
 
