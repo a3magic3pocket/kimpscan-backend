@@ -19,19 +19,23 @@ services:
       resources:
         limits:
           memory: 256M  # 메모리 제한
-#      restart_policy:
-#        condition: on-failure  # 실패 시 재시작 정책
+      restart_policy:
+        condition: on-failure  # 실패 시 재시작 정책
   kimpscan:
     image: kimpscan:latest
     ports:
       - "8080:8080"
     networks:
       - docker_net
+#    command: ["tail", "-f", "/dev/null"]
     deploy:
       replicas: 2  # Swarm 모드에서 서비스의 복제본 수를 설정 (여기서는 1개로 설정)
       resources:
         limits:
-          memory: 256M  # 메모리 제한
+          cpus: '1.0'
+          memory: 512M  # 메모리 제한(최소 300M은 필요)
+        reservations:
+          cpus: '0.5'
       restart_policy:
         condition: on-failure  # 실패 시 재시작 정책
 
