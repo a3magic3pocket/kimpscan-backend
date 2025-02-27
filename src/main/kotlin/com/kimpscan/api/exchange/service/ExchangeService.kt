@@ -7,7 +7,7 @@ import com.kimpscan.api.exchange.dto.Binance24hTickerDto
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.KimpTickerDto
 import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
-import com.kimpscan.api.exchange.kafka.KimpProducer
+import com.kimpscan.api.exchange.kafka.ExchangeTickerProducer
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
 import org.springframework.scheduling.annotation.Scheduled
@@ -21,7 +21,7 @@ class ExchangeService(
     private val upbitClient: UpbitClient,
     private val binanceClient: BinanceClient,
     private val exRateClient: ExRateClient,
-    private val kimpTickerProducer: KimpProducer,
+    private val exchangeTickerProducer: ExchangeTickerProducer,
     private val serviceLeaderLockService: ServiceLeaderLockService,
     private val keyValueStoreService: KeyValueStoreService,
 ) {
@@ -45,7 +45,7 @@ class ExchangeService(
         val isAcquired = serviceLeaderLockService.tryToAcquireLock()
         if (isAcquired) {
             scope.launch {
-                kimpTickerProducer.sendTicker(getExchangeTicker())
+                exchangeTickerProducer.sendTicker(getExchangeTicker())
             }
         }
     }

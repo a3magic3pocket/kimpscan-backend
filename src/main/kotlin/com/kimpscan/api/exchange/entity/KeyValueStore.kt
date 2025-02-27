@@ -12,10 +12,10 @@ data class KeyValueStore(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "`key`", nullable = false, length = 100)
     val key: String,
 
-    @Column(name = "container_id", nullable = true)
+    @Column(name = "value", nullable = false)
     var value: String,
 
     @Column(name = "updated_at", nullable = false)

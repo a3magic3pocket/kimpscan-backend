@@ -10,6 +10,7 @@ import com.kimpscan.api.exchange.handler.WebSocketKimpTickerHandler
 import com.kimpscan.api.exchange.service.KeyValueStoreService
 import com.kimpscan.api.global.config.AppConfig
 import com.kimpscan.api.global.config.KafkaMessageListenerConfig
+import kotlinx.serialization.json.Json
 import org.springframework.context.annotation.Bean
 import org.springframework.kafka.listener.KafkaMessageListenerContainer
 import org.springframework.kafka.listener.MessageListener
@@ -25,9 +26,9 @@ class KimpTickerConsumer(
 ) {
 
     @Bean
-    fun consume(): KafkaMessageListenerContainer<String, String> {
+    fun kimpTickerConsume(): KafkaMessageListenerContainer<String, String> {
         val container = kafkaMessageListenerConfig.createKafkaMessageListenerContainer(
-            topic = KafkaTopic.TICKER,
+            topic = KafkaTopic.EXCHANGE_TICKER,
             groupId = "${KafkaConsumerGroupId.KIMP_TICKER}-${appConfig.containerId}",
             messageListener = messageListener()
         )
@@ -38,8 +39,14 @@ class KimpTickerConsumer(
 
     private fun messageListener(): MessageListener<String, String> {
         return MessageListener { record ->
-            val typeRef = object : TypeReference<ExchangeTickerDto>() {}
-            val exchangeTickerDto: ExchangeTickerDto = objectMapper.readValue(record.value(), typeRef)
+            val json = Json { ignoreUnknownKeys = true } // 설정 옵션 (알 수 없는 키를 무시)
+
+            val input = record.value()
+                .trim('"')
+                .replace("\\\"", "\"")
+
+            val exchangeTickerDto = json.decodeFromString<ExchangeTickerDto>(input)
+
             val beforeExchangeTickerDto = keyValueStoreService.retrieveBeforeExchangeTickerDto()
 
             val diffTickerMap = getDiffKimpTickerMap(

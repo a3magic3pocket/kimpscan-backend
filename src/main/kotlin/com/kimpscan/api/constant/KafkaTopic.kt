@@ -1,5 +1,5 @@
 package com.kimpscan.api.constant
 
 object KafkaTopic {
-    const val TICKER = "ticker"
+    const val EXCHANGE_TICKER = "exchange-ticker"
 }

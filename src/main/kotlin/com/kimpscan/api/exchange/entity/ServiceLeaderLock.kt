@@ -17,13 +17,13 @@ data class ServiceLeaderLock(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     val name: String,
 
     @Column(name = "container_id", nullable = true, length = 100)
     var containerId: String? = null,
 
-    @Column(nullable = false)
+    @Column(name = "timestamp", nullable = false)
     var timestamp: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
 
 )

@@ -7,10 +7,10 @@
 
 ## kafka 설정
 - ```bash
-  ## ticker 토픽 생성
+  ## exchange-ticker 토픽 생성
   kafka-topics.sh --create \
     --bootstrap-server kafka:9092 \
-    --topic ticker \
+    --topic exchange-ticker \
     --partitions 1 \
     --replication-factor 1 \
     --config retention.ms=600000 \
@@ -21,10 +21,9 @@
     --config max.message.bytes=262144 \
     --config flush.messages=1 \
     --config flush.ms=1000
-    --config offsets.retention.minutes=10
   
   ## tester 컨슈머 그룹 ticker 토픽 구독
-  kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic ticker --from-beginning --group tester
+  kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic ticker --from-beginning --group tester
 
   # 카프카 컨슈머 그룹 목록 보기 
   kafka-consumer-groups.sh --bootstrap-server kafka:9092 --list
@@ -33,7 +32,13 @@
   # 삭제할 컨슈머 그룹 오프셋 초기화
   kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group 삭제할컨슈머그룹ID --topic 토픽명 --reset-offsets --to-latest --execute
   kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group 삭제할컨슈머그룹ID --delete
-
+  
+  # 토픽 목록
+  kafka-topics.sh --bootstrap-server kafka:9092 --list
+  
+  # 토픽 삭제
+  kafka-topics.sh --bootstrap-server kafka:9092 --topic 삭제할토픽명 --delete
+  
     ```
   
 ## 도커 스택

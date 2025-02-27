@@ -9,6 +9,7 @@ import com.kimpscan.api.exchange.handler.WebSocketKimpMovingAvgHandler
 import com.kimpscan.api.exchange.service.KeyValueStoreService
 import com.kimpscan.api.global.config.AppConfig
 import com.kimpscan.api.global.config.KafkaMessageListenerConfig
+import kotlinx.serialization.json.Json
 import org.springframework.context.annotation.Bean
 import org.springframework.kafka.listener.KafkaMessageListenerContainer
 import org.springframework.kafka.listener.MessageListener
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class KimpMovingAvgConsumer(
-    private val objectMapper: ObjectMapper,
     private val webSocketKimpMovingAvgHandler: WebSocketKimpMovingAvgHandler,
     private val keyValueStoreService: KeyValueStoreService,
     private val kafkaMessageListenerConfig: KafkaMessageListenerConfig,
@@ -24,9 +24,9 @@ class KimpMovingAvgConsumer(
 ) {
 
     @Bean
-    fun consume(): KafkaMessageListenerContainer<String, String> {
+    fun kimpMovingAvgConsume(): KafkaMessageListenerContainer<String, String> {
         val container = kafkaMessageListenerConfig.createKafkaMessageListenerContainer(
-            topic = KafkaTopic.TICKER,
+            topic = KafkaTopic.EXCHANGE_TICKER,
             groupId = "${KafkaConsumerGroupId.KIMP_TICKER_MOVING_AVG}-${appConfig.containerId}",
             messageListener = messageListener()
         )
@@ -39,8 +39,13 @@ class KimpMovingAvgConsumer(
         return MessageListener { record ->
             val result: MutableMap<String, List<Double>> = mutableMapOf()
 
-            val typeRef = object : TypeReference<ExchangeTickerDto>() {}
-            val exchangeTickerDto: ExchangeTickerDto = objectMapper.readValue(record.value(), typeRef)
+            val json = Json { ignoreUnknownKeys = true } // 설정 옵션 (알 수 없는 키를 무시)
+
+            val input = record.value()
+                .trim('"')
+                .replace("\\\"", "\"")
+
+            val exchangeTickerDto = json.decodeFromString<ExchangeTickerDto>(input)
 
             val beforeExchangeTickerDto = keyValueStoreService.retrieveBeforeExchangeTickerDto()
 
