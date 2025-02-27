@@ -83,7 +83,7 @@ class KimpMovingAvgConsumer(
                 val movingAvgList = listOf(kimp.toDouble(), movingAvg5, movingAvg20)
                 result[symbol] = movingAvgList
 
-                // beforeKimpMovingAvgMap 갱신
+                // beforeKimpMovingAvgMap 부분 갱신
                 updateBeforeKimpMovingAvgMap(
                     symbol = symbol,
                     movingAvgList = movingAvgList,
@@ -93,6 +93,9 @@ class KimpMovingAvgConsumer(
 
             // kimpMovingAvgCache 갱신
             keyValueStoreService.upsertKimpMovingAvgCache(kimpMovingAvgCache)
+
+            // beforeKimpMovingAvgMap 부분 갱신
+            keyValueStoreService.upsertBeforeKimpMovingAvgMap(beforeKimpMovingAvgMap)
 
             // 브로드 캐스트
             webSocketKimpMovingAvgHandler.broadcast(result)
