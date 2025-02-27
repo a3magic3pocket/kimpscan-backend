@@ -8,8 +8,11 @@ import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.KimpTickerDto
 import com.kimpscan.api.exchange.handler.WebSocketKimpTickerHandler
 import com.kimpscan.api.exchange.service.KeyValueStoreService
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.springframework.kafka.annotation.KafkaListener
+import com.kimpscan.api.global.config.AppConfig
+import com.kimpscan.api.global.config.KafkaMessageListenerConfig
+import org.springframework.context.annotation.Bean
+import org.springframework.kafka.listener.KafkaMessageListenerContainer
+import org.springframework.kafka.listener.MessageListener
 import org.springframework.stereotype.Service
 
 @Service
@@ -17,37 +20,51 @@ class KimpTickerConsumer(
     private val objectMapper: ObjectMapper,
     private val webSocketKimpTickerHandler: WebSocketKimpTickerHandler,
     private val keyValueStoreService: KeyValueStoreService,
+    private val kafkaMessageListenerConfig: KafkaMessageListenerConfig,
+    private val appConfig: AppConfig,
 ) {
 
-    @KafkaListener(topics = [KafkaTopic.TICKER], groupId = KafkaConsumerGroupId.KIMP_TICKER, concurrency = "1")
-    fun consume(record: ConsumerRecord<String, String>) {
-        val typeRef = object : TypeReference<ExchangeTickerDto>() {}
-        val exchangeTickerDto: ExchangeTickerDto = objectMapper.readValue(record.value(), typeRef)
-        val beforeExchangeTickerDto = keyValueStoreService.retrieveBeforeExchangeTickerDto()
-
-        val diffTickerMap = getDiffKimpTickerMap(
-            kimpTickerMap = exchangeTickerDto.kimpTickerMap,
-            beforeKimpTickerMap = beforeExchangeTickerDto.kimpTickerMap
+    @Bean
+    fun consume(): KafkaMessageListenerContainer<String, String> {
+        val container = kafkaMessageListenerConfig.createKafkaMessageListenerContainer(
+            topic = KafkaTopic.TICKER,
+            groupId = "${KafkaConsumerGroupId.KIMP_TICKER}-${appConfig.containerId}",
+            messageListener = messageListener()
         )
+        container.start()
 
-        // diffTickerMap 을 JSON 문자열로 변환
-        val diffExchangeTickerDto = mapOf(
-            ExchangeTickerDto::usdWonExRage.name to exchangeTickerDto.usdWonExRage,
-            ExchangeTickerDto::kimpTickerMap.name to diffTickerMap,
-        )
-        val diffTickerJson = objectMapper.writeValueAsString(diffExchangeTickerDto)
-
-        // diffDto 를 모든 세션에 브로드캐스트
-        for (session in webSocketKimpTickerHandler.sessions) {
-            webSocketKimpTickerHandler.broadcast(diffTickerJson)
-        }
-
-        // 직전 TickerMap 갱신
-        keyValueStoreService.upsertBeforeExchangeTickerDto(
-            exchangeTickerDto = exchangeTickerDto
-        )
+        return container
     }
 
+    private fun messageListener(): MessageListener<String, String> {
+        return MessageListener { record ->
+            val typeRef = object : TypeReference<ExchangeTickerDto>() {}
+            val exchangeTickerDto: ExchangeTickerDto = objectMapper.readValue(record.value(), typeRef)
+            val beforeExchangeTickerDto = keyValueStoreService.retrieveBeforeExchangeTickerDto()
+
+            val diffTickerMap = getDiffKimpTickerMap(
+                kimpTickerMap = exchangeTickerDto.kimpTickerMap,
+                beforeKimpTickerMap = beforeExchangeTickerDto.kimpTickerMap
+            )
+
+            // diffTickerMap 을 JSON 문자열로 변환
+            val diffExchangeTickerDto = mapOf(
+                ExchangeTickerDto::usdWonExRage.name to exchangeTickerDto.usdWonExRage,
+                ExchangeTickerDto::kimpTickerMap.name to diffTickerMap,
+            )
+            val diffTickerJson = objectMapper.writeValueAsString(diffExchangeTickerDto)
+
+            // diffDto 를 모든 세션에 브로드캐스트
+            for (session in webSocketKimpTickerHandler.sessions) {
+                webSocketKimpTickerHandler.broadcast(diffTickerJson)
+            }
+
+            // 직전 TickerMap 갱신
+            keyValueStoreService.upsertBeforeExchangeTickerDto(
+                exchangeTickerDto = exchangeTickerDto
+            )
+        }
+    }
 
     private fun getDiffKimpTickerMap(
         kimpTickerMap: MutableMap<String, KimpTickerDto>,

@@ -10,7 +10,6 @@ import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
 import com.kimpscan.api.exchange.kafka.KimpProducer
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
