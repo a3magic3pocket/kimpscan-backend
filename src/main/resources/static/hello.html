@@ -17,7 +17,7 @@
 
     // WebSocket 연결
     function connect() {
-        socket = new WebSocket('ws://localhost:8080/ws'); // WebSocket 엔드포인트로 연결
+        socket = new WebSocket('ws://localhost:8080/ws/exchange/tickers'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
         };
@@ -37,7 +37,7 @@
 
     // Websocket movingAvg 연결
     function connectMovingAvg() {
-        socket = new WebSocket('ws://localhost:8080/ws/moving-avg'); // WebSocket 엔드포인트로 연결
+        socket = new WebSocket('ws://localhost:8080/ws/exchange/moving-avgs'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
 

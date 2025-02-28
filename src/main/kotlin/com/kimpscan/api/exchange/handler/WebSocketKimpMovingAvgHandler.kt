@@ -2,6 +2,7 @@ package com.kimpscan.api.exchange.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
+import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
@@ -21,7 +22,7 @@ class WebSocketKimpMovingAvgHandler(
     }
 
     // 클라이언트가 연결을 끊으면 세션에서 제거
-    override fun afterConnectionClosed(session: WebSocketSession, status: org.springframework.web.socket.CloseStatus) {
+    override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
         subscriptions.remove(session)
     }
 
