@@ -10,13 +10,14 @@
 <h1 id="message">로드 중...</h1>
 <button onclick="connect()">김프 티커 연결</button>
 <button onclick="connectMovingAvg()">김프 이동평균 연결</button>
+<button id="init-tickers">최초 김프 티커 api 호출 </button>
 <button id="init-moving-avg">최초 김프 이동평균 api 호출 </button>
 </body>
 <script>
 
     // WebSocket 연결
     function connect() {
-        socket = new WebSocket('ws://localhost:8080/ws'); // WebSocket 엔드포인트로 연결
+        socket = new WebSocket('ws://localhost:8080/ws/exchange/tickers'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
         };
@@ -36,7 +37,7 @@
 
     // Websocket movingAvg 연결
     function connectMovingAvg() {
-        socket = new WebSocket('ws://localhost:8080/ws/moving-avg'); // WebSocket 엔드포인트로 연결
+        socket = new WebSocket('ws://localhost:8080/ws/exchange/moving-avgs'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
 
@@ -56,10 +57,15 @@
         };
     }
 
+// DOMContentLoaded 이벤트를 사용하여 DOM이 로드된 후 코드 실행
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM이 로드되었습니다!");
+    document.getElementById("message").textContent = "DOM이 성공적으로 로드되었습니다!";
+
     // 버튼 클릭 시 API 호출
     document.getElementById('init-moving-avg').addEventListener('click', async function() {
       try {
-        const response = await fetch('http://localhost:8080/exchange/moving-avg/init?symbol=XRPUSDT'); // 실제 API URL로 변경
+        const response = await fetch('http://localhost:8080/exchange/moving-avgs/init?symbol=XRPUSDT'); // 실제 API URL로 변경
         const data = await response.json();
         console.log("data", data)
       } catch (error) {
@@ -68,10 +74,17 @@
       }
     });
 
-// DOMContentLoaded 이벤트를 사용하여 DOM이 로드된 후 코드 실행
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("DOM이 로드되었습니다!");
-    document.getElementById("message").textContent = "DOM이 성공적으로 로드되었습니다!";
+    // 버튼 클릭 시 API 호출
+    document.getElementById('init-tickers').addEventListener('click', async function() {
+      try {
+        const response = await fetch('http://localhost:8080/exchange/tickers/init?symbol=XRPUSDT'); // 실제 API URL로 변경
+        const data = await response.json();
+        console.log("data", data)
+      } catch (error) {
+        // 오류가 발생하면 화면에 오류 메시지 표시
+        console.log("error", error)
+      }
+    });
 });
 </script>
 </html>

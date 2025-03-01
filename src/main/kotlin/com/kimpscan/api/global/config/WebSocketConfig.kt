@@ -16,8 +16,8 @@ class WebSocketConfig(
 
     // WebSocket 핸들러를 등록하는 메서드
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(webSocketKimpTickerHandler, "/ws")
-            .addHandler(webSocketKimpMovingAvgHandler, "/ws/moving-avg")
+        registry.addHandler(webSocketKimpTickerHandler, "/ws/exchange/tickers")
+            .addHandler(webSocketKimpMovingAvgHandler, "/ws/exchange/moving-avgs")
             .setAllowedOrigins("*") // CORS 설정
     }
 

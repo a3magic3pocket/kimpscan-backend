@@ -1,39 +1,23 @@
-package com.kimpscan.api.exchange.kafka
+package com.kimpscan.api.exchange.service
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.kimpscan.api.constant.KafkaTopic
+import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.KimpTickerDto
 import com.kimpscan.api.exchange.handler.WebSocketKimpMovingAvgHandler
-import com.kimpscan.api.exchange.service.ExchangeService
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
-class KimpMovingAvgConsumer(
-    private val objectMapper: ObjectMapper,
-    private val exchangeService: ExchangeService,
+class KimpMovingAvgService(
     private val webSocketKimpMovingAvgHandler: WebSocketKimpMovingAvgHandler
 ) {
 
     // 김프를 저장하는 슬라이딩 윈도우 (종목별로 관리)
     private val kimpData: MutableMap<String, MutableList<Double>> = ConcurrentHashMap()
-    private var beforeKimpTickerMap = mutableMapOf<String, KimpTickerDto>()
     private var beforeKimpMovingAvgMap = mutableMapOf<String, MutableList<List<Double>>>()
     private var isInit = false
 
-    @KafkaListener(topics = [KafkaTopic.TICKER], groupId = "kimp-ticker-moving-avg", concurrency = "1")
-    fun consume(record: ConsumerRecord<String, String>) {
+    fun consume(exchangeTicker: ExchangeTickerDto, beforeKimpTickerMap: MutableMap<String, KimpTickerDto>) {
         val result: MutableMap<String, List<Double>> = mutableMapOf()
-
-        if (!isInit) {
-            beforeKimpTickerMap = exchangeService.getBeforeKimpTickerMap()
-        }
-
-        val typeRef = object : TypeReference<Map<String, String>>() {}
-        val kimpMap: Map<String, String> = objectMapper.readValue(record.value(), typeRef)
 
         for ((symbol, beforeKimpTicker) in beforeKimpTickerMap) {
             // kimpData에 해당 symbol이 없으면 빈 리스트로 초기화
@@ -45,7 +29,7 @@ class KimpMovingAvgConsumer(
             }
 
             // kimp 값을 가져오고, 없으면 beforeKimpTicker.kimp 사용
-            val kimp = kimpMap[symbol] ?: beforeKimpTicker.kimp
+            val kimp = exchangeTicker.kimpTickerMap[symbol]?.kimp ?: beforeKimpTicker.kimp
             kimpList.add(kimp.toDouble())
 
             val movingAvg5 = if (kimpList.size >= 5) {
@@ -60,7 +44,7 @@ class KimpMovingAvgConsumer(
                 0.0
             }
 
-            val movingAvgList= listOf(kimp.toDouble(), movingAvg5, movingAvg20)
+            val movingAvgList = listOf(kimp.toDouble(), movingAvg5, movingAvg20)
             result[symbol] = movingAvgList
 
             // beforeKimpMovingAvgMap 갱신
@@ -72,7 +56,7 @@ class KimpMovingAvgConsumer(
         }
 
         isInit = true
-        
+
         // 브로드 캐스트
         webSocketKimpMovingAvgHandler.broadcast(result)
 
@@ -84,7 +68,7 @@ class KimpMovingAvgConsumer(
 
     private fun updateBeforeKimpMovingAvgMap(symbol: String, movingAvgList: List<Double>) {
         val beforeMovingAvgList = beforeKimpMovingAvgMap.getOrPut(symbol) { mutableListOf() }
-        
+
         // 리스트 크기가 7 이상이면 가장 오래된 값 제거
         if (beforeMovingAvgList.size >= 7) {
             beforeMovingAvgList.removeAt(0)
