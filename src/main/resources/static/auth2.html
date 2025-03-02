@@ -18,7 +18,7 @@
       state: 'asdfasdfasdjkfljawklejfklasjdfkla',
       ux_mode: 'popup',
       callback: (response) => {
-        const code_receiver_uri = 'http://localhost:8080/login/oauth2/code/google/web'
+        const code_receiver_uri = '/login/oauth2/code/google/web'
         const xhr = new XMLHttpRequest();
         xhr.open('POST', code_receiver_uri, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -39,7 +39,7 @@
         /*
         console.log("response", response)
         console.log("response", response.code)
-        axios.get(`http://localhost:8080/login/oauth2/code/google/authorization-code`,
+        axios.get(`/login/oauth2/code/google/authorization-code`,
         {
             params: response,
             withCredentials: true
@@ -55,7 +55,7 @@
 
 
         /*
-        const code_receiver_uri = "http://localhost:8080/login/oauth2/code/google"
+        const code_receiver_uri = "/login/oauth2/code/google"
         const xhr = new XMLHttpRequest();
         xhr.open('POST', code_receiver_uri, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');

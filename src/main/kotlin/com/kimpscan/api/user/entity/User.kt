@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.time.ZonedDateTime
 
 @Entity
+@Table(name = "`user`")
 data class User(
 
     @Id

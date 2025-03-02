@@ -1,0 +1,16 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 868229652830-ect29rap28q3sq82obo9q4vfnc6kkm8r.apps.googleusercontent.com
+            client-secret: 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
+            authorization-grant-type: authorization_code
+            scope: openid,profile
+#            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "https://clarify.kr/login/oauth2/code/google"
+        provider:
+          google:
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo

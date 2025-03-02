@@ -17,7 +17,7 @@
 
     // WebSocket 연결
     function connect() {
-        socket = new WebSocket('ws://localhost:8080/ws/exchange/tickers'); // WebSocket 엔드포인트로 연결
+        socket = new WebSocket('/ws/exchange/tickers'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
         };
@@ -37,7 +37,7 @@
 
     // Websocket movingAvg 연결
     function connectMovingAvg() {
-        socket = new WebSocket('ws://localhost:8080/ws/exchange/moving-avgs'); // WebSocket 엔드포인트로 연결
+        socket = new WebSocket('/ws/exchange/moving-avgs'); // WebSocket 엔드포인트로 연결
         socket.onopen = function(event) {
             console.log('Connected to WebSocket');
 
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 버튼 클릭 시 API 호출
     document.getElementById('init-moving-avg').addEventListener('click', async function() {
       try {
-        const response = await fetch('http://localhost:8080/exchange/moving-avgs/init?symbol=XRPUSDT'); // 실제 API URL로 변경
+        const response = await fetch('/exchange/moving-avgs/init?symbol=XRPUSDT'); // 실제 API URL로 변경
         const data = await response.json();
         console.log("data", data)
       } catch (error) {
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 버튼 클릭 시 API 호출
     document.getElementById('init-tickers').addEventListener('click', async function() {
       try {
-        const response = await fetch('http://localhost:8080/exchange/tickers/init?symbol=XRPUSDT'); // 실제 API URL로 변경
+        const response = await fetch('/exchange/tickers/init?symbol=XRPUSDT'); // 실제 API URL로 변경
         const data = await response.json();
         console.log("data", data)
       } catch (error) {
