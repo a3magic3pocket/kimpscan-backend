@@ -2,6 +2,7 @@ package com.kimpscan.api.auth.controller
 
 import com.kimpscan.api.auth.service.AuthService
 import com.kimpscan.api.auth.service.OAuth2Service
+import com.kimpscan.api.global.config.AuthConfig
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OAuthController(
+    private val authConfig: AuthConfig,
     private val oAuth2Service: OAuth2Service,
     private val authService: AuthService,
 ) {
@@ -19,12 +21,7 @@ class OAuthController(
 
     @PostMapping("/login/oauth2/code/google/web")
     suspend fun loginGoogle(request: HttpServletRequest, @RequestParam code: String): Any? {
-        val serverPortPhrase = if (request.serverPort in setOf(80, 443)) {
-            ""
-        } else {
-            ":${request.serverPort}"
-        }
-        val redirectUrl = "${request.scheme}://${request.serverName}$serverPortPhrase"
+        val redirectUrl = authConfig.origin
         val tokenResponse = oAuth2Service.getGoogleAccessToken(
             code = code,
             redirectUrl = redirectUrl
