@@ -52,6 +52,7 @@ server:
 
 app:
   auth:
+    origin: "http://localhost:8080"
     success-url: "http://localhost:8080/auth-success.html"
     failure-url: "http://localhost:8080/auth-failure.html"
   jwt:

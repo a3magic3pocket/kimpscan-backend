@@ -33,8 +33,10 @@ server:
 
 app:
   auth:
+#    origin: "http://localhost:8080"
 #    success-url: "http://localhost:8080/auth-success.html"
 #    failure-url: "http://localhost:8080/auth-failure.html"
+    origin: "https://clarify.kr"
     success-url: "https://clarify.kr/auth-success.html"
     failure-url: "https://clarify.kr/auth-failure.html"
   jwt:
