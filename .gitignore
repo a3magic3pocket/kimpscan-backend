@@ -30,3 +30,4 @@ build
 out
 application-oauth.yml
 application-prod.yml
+!gradle/wrapper/gradle-wrapper.jar
