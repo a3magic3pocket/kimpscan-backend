@@ -40,11 +40,13 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers("/exchange/**").permitAll()
                     .requestMatchers("/auth/success").permitAll()
-                    .requestMatchers("/hello.html").authenticated()
+//                    .requestMatchers("/hello.html").authenticated()
+                    .requestMatchers("/hello.html").permitAll()
                     .requestMatchers("/auth.html").permitAll()
                     .requestMatchers("/auth2.html").permitAll()
                     .requestMatchers("/login/oauth2/**").permitAll()
-                    .anyRequest().authenticated()
+//                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
             }
             .exceptionHandling { e ->
                 e.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
