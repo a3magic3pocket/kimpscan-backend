@@ -1,5 +1,6 @@
 spring:
   profiles:
 #    active: prod
-    active: dev
+#    active: dev
+    active: local
     include: oauth
