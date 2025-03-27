@@ -72,7 +72,7 @@ class SecurityConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
         val corsConfiguration = CorsConfiguration()
         corsConfiguration.allowedOrigins =
-            listOf("http://localhost:63342", "https://kimpscan.com", "https://www.kimpscan.com")  // 허용할 도메인
+            listOf("http://localhost:4173", "https://kimpscan.com", "https://www.kimpscan.com")  // 허용할 도메인
         corsConfiguration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 허용할 HTTP 메소드
         corsConfiguration.allowedHeaders = listOf("Authorization", "Content-Type")  // 허용할 헤더
         corsConfiguration.allowCredentials = true  // 쿠키와 인증 정보를 포함할 수 있도록 허용
