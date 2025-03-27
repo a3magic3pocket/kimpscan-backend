@@ -124,10 +124,10 @@ class ExchangeService(
         return beforeKimpMovingAvgMap[symbol] ?: mutableListOf()
     }
 
-    fun getBeforeKimpTickerMap(): MutableMap<String, KimpTickerDto> {
+    fun getBeforeExchangeDto(): ExchangeTickerDto {
         val exchangeTickerDto = keyValueStoreService.retrieveBeforeExchangeTickerDto()
 
-        return exchangeTickerDto.kimpTickerMap
+        return exchangeTickerDto
     }
 
     private fun convertSymbolUpbit(krwMarket: String): String {

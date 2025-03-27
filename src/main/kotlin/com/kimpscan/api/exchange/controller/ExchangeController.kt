@@ -1,6 +1,6 @@
 package com.kimpscan.api.exchange.controller
 
-import com.kimpscan.api.exchange.dto.KimpTickerDto
+import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.service.ExchangeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,14 +15,14 @@ class ExchangeController(
 ) {
 
     @GetMapping("/tickers/init")
-    fun getInitKimpTickerMap(): ResponseEntity<MutableMap<String, KimpTickerDto>> {
+    fun getInitTicker(): ResponseEntity<ExchangeTickerDto> {
         return ResponseEntity.ok().body(
-            exchangeService.getBeforeKimpTickerMap()
+            exchangeService.getBeforeExchangeDto()
         )
     }
 
     @GetMapping("/moving-avgs/init")
-    fun getInitKimpMovingAvgMap(
+    fun getInitMovingAvg(
         @RequestParam(name = "symbol") symbol: String
     ): ResponseEntity<MutableList<List<Double>>> {
         return ResponseEntity.ok().body(
