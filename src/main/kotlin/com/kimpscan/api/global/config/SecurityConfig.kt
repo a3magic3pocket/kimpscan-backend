@@ -45,6 +45,7 @@ class SecurityConfig(
                     .requestMatchers("/auth.html").permitAll()
                     .requestMatchers("/auth2.html").permitAll()
                     .requestMatchers("/login/oauth2/**").permitAll()
+                    .requestMatchers("/health-check").permitAll()
 //                    .anyRequest().authenticated()
                     .anyRequest().permitAll()
             }
