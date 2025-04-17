@@ -30,9 +30,11 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("org.springframework.kafka:spring-kafka-test")
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("org.testcontainers:mariadb")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-	runtimeOnly("com.h2database:h2")
+	//	runtimeOnly("com.h2database:h2")
 
 	// websocket & coroutines
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
