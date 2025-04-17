@@ -35,7 +35,7 @@ class KimpMovingAvgConsumer(
         return container
     }
 
-    private fun messageListener(): MessageListener<String, String> {
+    internal fun messageListener(): MessageListener<String, String> {
         return MessageListener { record ->
             val result: MutableMap<String, List<Double>> = mutableMapOf()
 
