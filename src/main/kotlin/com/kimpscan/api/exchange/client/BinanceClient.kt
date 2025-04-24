@@ -1,6 +1,7 @@
 package com.kimpscan.api.exchange.client
 
 import com.kimpscan.api.exchange.dto.client.Binance24hTickerApiResDto
+import com.kimpscan.api.exchange.dto.client.BinanceExchangeInfoResDto
 import com.kimpscan.api.exchange.dto.client.BinanceTickerApiResDto
 import kotlinx.coroutines.reactive.collect
 import kotlinx.coroutines.reactor.awaitSingle
@@ -80,6 +81,50 @@ class BinanceClient(private val webClient: WebClient) {
             // 그 외 일반적인 에러 처리
             println("Unexpected Error: ${e.message}")
             listOf()
+        }
+
+    }
+
+
+    @OptIn(ExperimentalSerializationApi::class)
+    suspend fun getExchangeInfo(): BinanceExchangeInfoResDto? {
+        return try {
+            val responseFlux = webClient.get()
+                .uri("https://api.binance.com/api/v3/exchangeInfo?showPermissionSets=true")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToFlux(DataBuffer::class.java)
+
+            // 바이트 배열을 임시로 저장할 ByteArrayOutputStream
+            val byteArrayOutputStream = ByteArrayOutputStream()
+
+            responseFlux.collect { dataBuffer ->
+                try {
+                    val byteArrayBuffer = ByteArray(dataBuffer.readableByteCount())
+                    dataBuffer.read(byteArrayBuffer)
+                    byteArrayOutputStream.write(byteArrayBuffer) // ByteArrayOutputStream 에 기록
+                } finally {
+                    DataBufferUtils.release(dataBuffer)
+                }
+            }
+
+            // ByteArrayOutputStream 에서 바이트 배열로 변환
+            val byteArray = byteArrayOutputStream.toByteArray()
+
+            // 바이트 배열을 ByteArrayInputStream 으로 변환하여 Json 파싱
+            val byteArrayInputStream = ByteArrayInputStream(byteArray)
+            val json = Json { ignoreUnknownKeys = true }
+
+            return json.decodeFromStream<BinanceExchangeInfoResDto>(byteArrayInputStream)
+
+        } catch (e: WebClientResponseException) {
+            // HTTP 에러 처리 (예: 4xx, 5xx)
+            println("HTTP Status: ${e.statusCode}, Response Body: ${e.responseBodyAsString}")
+            null
+        } catch (e: Exception) {
+            // 그 외 일반적인 에러 처리
+            println("Unexpected Error: ${e.message}")
+            null
         }
 
     }
