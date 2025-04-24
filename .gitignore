@@ -29,4 +29,5 @@ build
 .idea
 out
 application-oauth.yml
+application-singleoauth.yml
 application-prod.yml
