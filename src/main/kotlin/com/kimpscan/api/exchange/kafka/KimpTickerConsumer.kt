@@ -115,6 +115,12 @@ class KimpTickerConsumer(
             if (beforeTicker.usdt24hVolume != currentTicker.usdt24hVolume) {
                 row[KimpTickerDto::usdt24hVolume.name] = currentTicker.usdt24hVolume
             }
+            if (beforeTicker.upbitWarning != currentTicker.upbitWarning) {
+                row[KimpTickerDto::upbitWarning.name] = currentTicker.upbitWarning
+            }
+            if (beforeTicker.binanceStatus != currentTicker.binanceStatus) {
+                row[KimpTickerDto::binanceStatus.name] = currentTicker.binanceStatus
+            }
             if (beforeTicker.kimp != currentTicker.kimp) {
                 row[KimpTickerDto::kimp.name] = currentTicker.kimp
             }
