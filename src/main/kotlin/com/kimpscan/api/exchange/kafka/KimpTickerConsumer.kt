@@ -1,6 +1,5 @@
 package com.kimpscan.api.exchange.kafka
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kimpscan.api.constant.KafkaConsumerGroupId
 import com.kimpscan.api.constant.KafkaTopic

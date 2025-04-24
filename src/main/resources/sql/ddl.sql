@@ -32,3 +32,15 @@ CREATE TABLE IF NOT EXISTS `key_value_store` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 )
 ;
+
+-- symbol_info 테이블 생성
+CREATE TABLE IF NOT EXISTS `symbol_info` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `symbol` varchar(100) NOT NULl UNIQUE,
+  `kor_name` varchar(100) NOT NULL DEFAULT "",
+  `upbit_warning` TINYINT(1) NOT NULL DEFAULT 0,
+  `binance_symbol_status` varchar(100) NOT NULL DEFAULT "TRADING",
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+;

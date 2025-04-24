@@ -6,15 +6,16 @@ import com.kimpscan.api.exchange.client.UpbitClient
 import com.kimpscan.api.exchange.dto.Binance24hTickerDto
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.KimpTickerDto
-import com.kimpscan.api.exchange.dto.client.UpbitSymbolInfoApiResDto
+import com.kimpscan.api.exchange.dto.UpbitExchangeInfoDto
+import com.kimpscan.api.exchange.entity.BinanceSymbolStatus
 import com.kimpscan.api.exchange.kafka.ExchangeTickerProducer
-import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.*
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service
 class ExchangeService(
@@ -24,42 +25,88 @@ class ExchangeService(
     private val exchangeTickerProducer: ExchangeTickerProducer,
     private val serviceLeaderLockService: ServiceLeaderLockService,
     private val keyValueStoreService: KeyValueStoreService,
+    private val symbolInfoService: SymbolInfoService,
 ) {
     private val exRateGetter = createExRateGetter()
     private val binance24hTickerDtoMapGetter = createBinance24hTickerDtoMapGetter()
-    private val upbitSymbolInfoMap = mutableMapOf<String, UpbitSymbolInfoApiResDto>()
+    private val upbitExchangeInfoMap = mutableMapOf<String, UpbitExchangeInfoDto>()
+    private val binanceExchangeInfoMap = mutableMapOf<String, BinanceSymbolStatus>()
 
     // CoroutineScope 를 애플리케이션 라이프사이클에 맞게 관리
     private val job = SupervisorJob() // 코루틴 작업을 관리할 Job
     private val scope = CoroutineScope(Dispatchers.Default + job) // 스코프 설정
 
-    @PostConstruct
-    fun init() {
-        scope.launch {
-            updateUpbitSymbolInfo()
-        }
+    // 현재 서비스 락 점유 여부
+    private val isAcquiredLock = AtomicBoolean(false)
+
+    // 1초마다 락 상태 갱신
+    @Scheduled(fixedRate = 1000)
+    fun checkLock() {
+        val isAcquired = serviceLeaderLockService.tryToAcquireLock()
+        isAcquiredLock.set(isAcquired)
     }
 
+    // 1초마다 김프 생성
     @Scheduled(fixedRate = 1000)
     fun publishKimp() {
-        val isAcquired = serviceLeaderLockService.tryToAcquireLock()
-        if (isAcquired) {
+        if (isAcquiredLock.get()) {
             scope.launch {
                 exchangeTickerProducer.sendTicker(getExchangeTicker())
             }
         }
     }
 
-    suspend fun updateUpbitSymbolInfo() {
-        coroutineScope {
-            val upbitSymbolInfosDeferred = async { upbitClient.getSymbolInfo() }
-
-            val upbitSymbolInfos = upbitSymbolInfosDeferred.await()
-
-            for (upbitSymbolInfo in upbitSymbolInfos) {
-                val upbitSymbol = convertSymbolUpbit(krwMarket = upbitSymbolInfo.market)
-                upbitSymbolInfoMap[upbitSymbol] = upbitSymbolInfo
+    // 5분 마다 업비트 종목 및 바이낸스 종목 상태 갱신
+    @Scheduled(fixedRate = 300000)
+    fun updateExchangeInfoPeriodically() {
+        if (isAcquiredLock.get()) {
+            scope.launch {
+                updateExchangeInfo()
             }
+        }
+    }
+
+    suspend fun updateExchangeInfo() {
+        coroutineScope {
+            val upbitDeferred = async { upbitClient.getSymbolInfo() }
+            val binanceDeferred = async { binanceClient.getExchangeInfo() }
+            val upbitExchangeInfoList = upbitDeferred.await()
+            val binanceExchangeInfo = binanceDeferred.await()
+
+            for (upbitExchangeInfo in upbitExchangeInfoList) {
+                if (!upbitExchangeInfo.market.startsWith("KRW-")) {
+                    continue
+                }
+
+                val upbitSymbol = convertSymbolUpbit(krwMarket = upbitExchangeInfo.market)
+                upbitExchangeInfoMap[upbitSymbol] = UpbitExchangeInfoDto(
+                    korName = upbitExchangeInfo.koreanName,
+                    warning = upbitExchangeInfo.upbitSymbolInfoMarketEventDto?.warning ?: false,
+                )
+            }
+
+            val binanceSymbolInfoList = binanceExchangeInfo?.symbols ?: listOf()
+            for (binanceSymbolInfo in binanceSymbolInfoList) {
+                binanceSymbolInfo.symbol?.let { symbol ->
+                    if (!symbol.endsWith("USDT")) {
+                        return@let
+                    }
+
+                    val status = try {
+                        enumValueOf<BinanceSymbolStatus>(binanceSymbolInfo.status ?: "")
+                    } catch (e: IllegalArgumentException) {
+                        println("Invalid status: ${symbol}: ${binanceSymbolInfo.status}")
+                        BinanceSymbolStatus.BREAK
+                    }
+
+                    binanceExchangeInfoMap[symbol] = status
+                }
+            }
+
+            symbolInfoService.upsertSymbolInfo(
+                upbitExchangeInfoMap = upbitExchangeInfoMap,
+                binanceExchangeInfoMap = binanceExchangeInfoMap,
+            )
         }
     }
 
@@ -89,7 +136,7 @@ class ExchangeService(
 
                 val ticker = KimpTickerDto(
                     rootSymbol = convertRootSymbol(usdtSymbol = upbitSymbol),
-                    korName = upbitSymbolInfoMap[upbitSymbol]?.koreanName ?: "",
+                    korName = upbitExchangeInfoMap[upbitSymbol]?.korName ?: "",
                     wonPrice = roundDecimalPlaces(upbitTicker.tradePrice).toString(),
                     wonOldPrice = roundDecimalPlaces(
                         upbitTicker.prevClosingPrice
@@ -106,6 +153,8 @@ class ExchangeService(
                             it.volume.toDouble()
                         ).toString()
                     } ?: "0.0",
+                    upbitWarning = upbitExchangeInfoMap[upbitSymbol]?.warning ?: false,
+                    binanceStatus = binanceExchangeInfoMap[upbitSymbol] ?: BinanceSymbolStatus.TRADING,
                     kimp = roundDecimalPlaces(kimp).toString(),
                 )
                 tickerMap[upbitSymbol] = ticker
