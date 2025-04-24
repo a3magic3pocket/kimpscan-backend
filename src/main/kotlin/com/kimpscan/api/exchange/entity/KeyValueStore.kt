@@ -1,6 +1,7 @@
 package com.kimpscan.api.exchange.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -18,6 +19,7 @@ data class KeyValueStore(
     @Column(name = "value", nullable = false)
     var value: String,
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     var updatedAt: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
 

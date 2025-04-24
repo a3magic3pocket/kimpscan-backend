@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
-interface KeyValueStoreRepository : JpaRepository<KeyValueStore, Int> {
+interface KeyValueStoreRepository : JpaRepository<KeyValueStore, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT k FROM KeyValueStore k WHERE k.key = :key")

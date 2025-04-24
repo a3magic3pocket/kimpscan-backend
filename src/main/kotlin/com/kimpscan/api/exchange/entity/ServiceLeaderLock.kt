@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -23,6 +24,7 @@ data class ServiceLeaderLock(
     @Column(name = "container_id", nullable = true, length = 100)
     var containerId: String? = null,
 
+    @UpdateTimestamp
     @Column(name = "timestamp", nullable = false)
     var timestamp: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
 

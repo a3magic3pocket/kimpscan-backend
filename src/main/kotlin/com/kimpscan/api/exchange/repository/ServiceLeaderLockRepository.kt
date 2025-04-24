@@ -5,7 +5,7 @@ import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 
-interface ServiceLeaderLockRepository : JpaRepository<ServiceLeaderLock, Int> {
+interface ServiceLeaderLockRepository : JpaRepository<ServiceLeaderLock, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     fun findByName(name: String): ServiceLeaderLock?
