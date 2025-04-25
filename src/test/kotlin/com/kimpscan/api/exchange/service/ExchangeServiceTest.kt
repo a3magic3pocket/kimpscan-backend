@@ -23,6 +23,7 @@ class ExchangeServiceTest {
     private val exchangeTickerProducer: ExchangeTickerProducer = mockk()
     private val serviceLeaderLockService: ServiceLeaderLockService = mockk()
     private val keyValueStoreService: KeyValueStoreService = mockk()
+    private val symbolInfoService: SymbolInfoService = mockk()
 
     private val exchangeService = ExchangeService(
         upbitClient,
@@ -30,7 +31,8 @@ class ExchangeServiceTest {
         exRateClient,
         exchangeTickerProducer,
         serviceLeaderLockService,
-        keyValueStoreService
+        keyValueStoreService,
+        symbolInfoService,
     )
 
     @Test

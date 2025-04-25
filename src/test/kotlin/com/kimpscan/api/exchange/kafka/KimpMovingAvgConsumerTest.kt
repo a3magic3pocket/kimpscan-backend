@@ -2,6 +2,7 @@ package com.kimpscan.api.exchange.kafka
 
 import com.kimpscan.api.exchange.dto.ExchangeTickerDto
 import com.kimpscan.api.exchange.dto.KimpTickerDto
+import com.kimpscan.api.exchange.entity.BinanceSymbolStatus
 import com.kimpscan.api.exchange.entity.KeyValueStore
 import com.kimpscan.api.exchange.handler.WebSocketKimpMovingAvgHandler
 import com.kimpscan.api.exchange.service.KeyValueStoreService
@@ -28,7 +29,7 @@ class KimpMovingAvgConsumerTest {
     fun setUp() {
         webSocketKimpMovingAvgHandler = mockk(relaxed = true)
         keyValueStoreService = mockk(relaxed = true)
-        kafkaMessageListenerConfig = mockk()
+        kafkaMessageListenerConfig = mockk(relaxed = true)
         appConfig = mockk()
 
         every { appConfig.containerId } returns "test"
@@ -58,6 +59,8 @@ class KimpMovingAvgConsumerTest {
                     usdtPrice = "85000.00000",
                     usdtOldPrice = "84000.00000",
                     usdt24hVolume = "21000.54321",
+                    upbitWarning = true,
+                    binanceStatus = BinanceSymbolStatus.TRADING,
                     kimp = currentKimp.toString()
                 )
             )
@@ -75,6 +78,8 @@ class KimpMovingAvgConsumerTest {
                     usdtPrice = "85000.00000",
                     usdtOldPrice = "84000.00000",
                     usdt24hVolume = "21000.54321",
+                    upbitWarning = true,
+                    binanceStatus = BinanceSymbolStatus.TRADING,
                     kimp = "2.0"
                 )
             )
@@ -158,10 +163,10 @@ class KimpMovingAvgConsumerTest {
         // 현재 김프가 kimpMovingAvgCache 에 추가된 상태
         assertEquals(currentKimp, targetKimpMovingAvgCache.last())
 
-        val expectedMovingAvg5 = targetKimpMovingAvgCache.take(5)?.average()
+        val expectedMovingAvg5 = targetKimpMovingAvgCache.take(5).average()
         assertEquals(expectedMovingAvg5, kimpList[1])
 
-        val expectedMovingAvg20 = targetKimpMovingAvgCache.take(20)?.average()
+        val expectedMovingAvg20 = targetKimpMovingAvgCache.take(20).average()
         assertEquals(expectedMovingAvg20, kimpList[2])
     }
 }
