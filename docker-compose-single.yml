@@ -16,7 +16,12 @@ services:
       - ./z_certbot:/var/www/html
     networks:
       - docker_net
-    mem_limit: 50m # 최소 256MB RAM 보장
+    mem_limit: 128m # 최소 256MB RAM 보장
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - kimpscan
 
@@ -24,14 +29,17 @@ services:
     image: openjdk:21-jdk-slim  # JDK 21 이미지를 사용
     container_name: kimpscan
     restart: always
-    environment:
-      - JAVA_OPTS=-Xmx400m  # Java 옵션 (메모리 설정 등)
     volumes:
       - ./api-0.0.1-SNAPSHOT.jar:/api-0.0.1-SNAPSHOT.jar  # 로컬 JAR 파일을 컨테이너에 매핑
-    command: [ "java", "-Xmx480m", "-jar", "/api-0.0.1-SNAPSHOT.jar" ]  # JAR 파일 실행
+    command: [ "java", "-Xmx350m", "-jar", "/api-0.0.1-SNAPSHOT.jar" ]  # JAR 파일 실행
     networks:
       - docker_net
     mem_limit: 500m # 최소 256MB RAM 보장
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 configs:
   nginx-config:
