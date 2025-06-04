@@ -12,6 +12,15 @@ class SymbolInfoService(
     private val symbolInfoRepository: SymbolInfoRepository,
 ) {
 
+    @Transactional(readOnly = true)
+    fun searchSymbolInfo(keyword: String?, isStatusTrading: Boolean): List<SymbolInfo> {
+        return symbolInfoRepository.searchSymbolInfo(
+            keyword = keyword,
+            isStatusTrading = isStatusTrading,
+            limit = 5
+        )
+    }
+
     @Transactional(rollbackFor = [Exception::class])
     fun upsertSymbolInfo(
         upbitExchangeInfoMap: MutableMap<String, UpbitExchangeInfoDto>,
