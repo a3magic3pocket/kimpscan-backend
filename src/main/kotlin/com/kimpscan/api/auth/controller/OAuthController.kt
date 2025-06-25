@@ -1,5 +1,6 @@
 package com.kimpscan.api.auth.controller
 
+import com.kimpscan.api.auth.dto.AuthTokenDto
 import com.kimpscan.api.auth.service.AuthService
 import com.kimpscan.api.auth.service.OAuth2Service
 import com.kimpscan.api.global.config.AuthConfig
@@ -20,7 +21,10 @@ class OAuthController(
     }
 
     @PostMapping("/login/oauth2/code/google/web")
-    suspend fun loginGoogle(request: HttpServletRequest, @RequestParam code: String): Any? {
+    suspend fun loginGoogle(
+        request: HttpServletRequest,
+        @RequestParam code: String
+    ): ResponseEntity<AuthTokenDto> {
         val redirectUrl = authConfig.origin
         val tokenResponse = oAuth2Service.getGoogleAccessToken(
             code = code,
