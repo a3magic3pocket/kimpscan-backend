@@ -45,6 +45,7 @@ class OAuth2Service(
                     .flatMap { errorBody ->
                         // ⭐⭐⭐ Google의 실제 상세 오류 메시지 여기에 출력 ⭐⭐⭐
                         // 이 로그 라인이 문제 해결의 핵심 단서를 제공할 것입니다!
+                        logger.info("redirectUrl: $redirectUrl")
                         logger.error("Google API 상세 오류 응답 (${clientResponse.statusCode()}): $errorBody")
                         Mono.error(WebClientResponseException(
                             clientResponse.statusCode().value(),
