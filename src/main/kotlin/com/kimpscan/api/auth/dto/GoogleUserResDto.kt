@@ -27,4 +27,7 @@ data class GoogleUserResDto (
     @SerialName("picture")
     val picture: String,
 
+    @SerialName("hd")
+    val hd: String? = null,
+
 )

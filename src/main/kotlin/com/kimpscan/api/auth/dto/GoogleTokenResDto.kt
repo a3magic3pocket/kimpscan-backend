@@ -11,18 +11,21 @@ data class GoogleTokenResDto(
     val accessToken: String,
 
     @SerialName("refresh_token")
-    val refreshToken: String,
+    val refreshToken: String? = null,
 
     @SerialName("expires_in")
-    val expiresIn: Int,
+    val expiresIn: Int? = null,
 
     @SerialName("scope")
-    val scope: String,
+    val scope: String? = null,
 
     @SerialName("token_type")
-    val tokenType: String,
+    val tokenType: String? = null,
 
     @SerialName("id_token")
-    val idToken: String,
+    val idToken: String? = null,
+
+    @SerialName("refresh_token_expires_in")
+    val refreshTokenExpiresIn: Int? = null
 
 )
