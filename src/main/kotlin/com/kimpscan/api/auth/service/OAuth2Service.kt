@@ -25,7 +25,7 @@ class OAuth2Service(
         private val logger = LoggerFactory.getLogger(OAuth2Service::class.java)
     }
 
-    suspend fun getGoogleAccessToken(code: String, redirectUrl: String): GoogleTokenResDto? {
+    suspend fun getGoogleAccessToken(code: String): GoogleTokenResDto? {
         val googleRegistration = oAuth2Properties.registration[GOOGLE] ?: throw NotFoundException()
         val googleProvider = oAuth2Properties.provider[GOOGLE] ?: throw NotFoundException()
 
@@ -36,7 +36,7 @@ class OAuth2Service(
                 "code=$code" +
                         "&client_id=${googleRegistration.clientId}" +
                         "&client_secret=${googleRegistration.clientSecret}" +
-                        "&redirect_uri=$redirectUrl" +
+                        "&redirect_uri=${googleRegistration.redirectUri}" +
                         "&grant_type=authorization_code"
             )
             .retrieve()
@@ -45,7 +45,7 @@ class OAuth2Service(
                     .flatMap { errorBody ->
                         // ⭐⭐⭐ Google의 실제 상세 오류 메시지 여기에 출력 ⭐⭐⭐
                         // 이 로그 라인이 문제 해결의 핵심 단서를 제공할 것입니다!
-                        logger.info("redirectUrl: $redirectUrl")
+                        logger.info("redirectUrl: ${googleRegistration.redirectUri}")
                         logger.error("Google API 상세 오류 응답 (${clientResponse.statusCode()}): $errorBody")
                         Mono.error(WebClientResponseException(
                             clientResponse.statusCode().value(),

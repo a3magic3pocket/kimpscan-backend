@@ -3,7 +3,6 @@ package com.kimpscan.api.auth.controller
 import com.kimpscan.api.auth.dto.AuthTokenDto
 import com.kimpscan.api.auth.service.AuthService
 import com.kimpscan.api.auth.service.OAuth2Service
-import com.kimpscan.api.global.config.AuthConfig
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OAuthController(
-    private val authConfig: AuthConfig,
     private val oAuth2Service: OAuth2Service,
     private val authService: AuthService,
 ) {
@@ -25,11 +23,7 @@ class OAuthController(
         request: HttpServletRequest,
         @RequestParam code: String
     ): ResponseEntity<AuthTokenDto> {
-        val redirectUrl = authConfig.origin
-        val tokenResponse = oAuth2Service.getGoogleAccessToken(
-            code = code,
-            redirectUrl = redirectUrl
-        ) ?: throw Exception("401 에러")
+        val tokenResponse = oAuth2Service.getGoogleAccessToken(code = code) ?: throw Exception("401 에러")
 
 
         val googleUser = oAuth2Service.getGoogleUser(
