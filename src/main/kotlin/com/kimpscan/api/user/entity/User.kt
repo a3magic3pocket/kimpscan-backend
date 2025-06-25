@@ -22,6 +22,9 @@ data class User(
     @Column(name = "oauth2_provider", nullable = false)
     val oauth2Provider: String,
 
+    @Column(name = "fcm_key", nullable = true)
+    var fcmKey: String? = null,
+
     @Convert(converter = BooleanToIntegerAttributeConverter::class)
     @Column(name = "is_active", nullable = false)
     val isActive: Boolean = true,

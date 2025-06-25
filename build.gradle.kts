@@ -28,6 +28,7 @@ dependencies {
 	implementation("io.github.openfeign.querydsl:querydsl-jpa:6.11")
 	ksp("io.github.openfeign.querydsl:querydsl-ksp-codegen:6.11")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 	testImplementation("io.mockk:mockk:1.14.0")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

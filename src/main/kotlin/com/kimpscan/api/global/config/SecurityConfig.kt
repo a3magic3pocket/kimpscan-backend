@@ -40,6 +40,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers("/exchange/**").permitAll()
                     .requestMatchers("/auth/success").permitAll()
+                    .requestMatchers("/user/fcm").authenticated()
 //                    .requestMatchers("/hello.html").authenticated()
                     .requestMatchers("/hello.html").permitAll()
                     .requestMatchers("/auth.html").permitAll()

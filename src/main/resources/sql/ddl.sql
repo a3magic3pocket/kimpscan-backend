@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `name` varchar(255) NOT NULL,
   `oauth2_sub` varchar(255) NOT NULL,
   `oauth2_provider` varchar(100) NOT NULL,
+  `fcm_key` varchar(100) DEFAULT NULL,
   `is_active` tinyint(1) default 0 NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP
