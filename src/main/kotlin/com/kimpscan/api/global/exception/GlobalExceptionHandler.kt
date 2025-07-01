@@ -255,4 +255,22 @@ class GlobalExceptionHandler {
         )
     }
 
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(UnauthorizedException::class)
+    @ResponseBody
+    fun handleUnauthorized(
+        httpServletRequest: HttpServletRequest,
+        exception: UnauthorizedException,
+    ): ErrorResDto {
+        val unauthorizedMessage = "unauthorized"
+
+        return ErrorResDto(
+            code = exception.code,
+            timestamp = Date(),
+            path = httpServletRequest.requestURI,
+            message = exception.message ?: unauthorizedMessage,
+            fieldErrorDtos = listOf()
+        )
+    }
+
 }
