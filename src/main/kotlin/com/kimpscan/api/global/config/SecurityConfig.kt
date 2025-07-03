@@ -38,7 +38,9 @@ class SecurityConfig(
             .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authorizeHttpRequests {
-                it.requestMatchers("/exchange/**").permitAll()
+                it
+                    .requestMatchers("/exchange/symbols/search").authenticated()
+                    .requestMatchers("/exchange/**").permitAll()
                     .requestMatchers("/auth/success").permitAll()
                     .requestMatchers("/user/fcm").authenticated()
 //                    .requestMatchers("/hello.html").authenticated()
