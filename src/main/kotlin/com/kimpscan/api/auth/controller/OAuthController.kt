@@ -54,8 +54,8 @@ class OAuthController(
         if (!jwtProvider.validateToken(token)) {
             throw UnauthorizedException()
         }
-
-        val newAuthTokenDto = jwtProvider.createToken(token)
+        val authentication = jwtProvider.getAuthentication(token)
+        val newAuthTokenDto = jwtProvider.createToken(authentication.name.toString())
 
         return ResponseEntity.ok(newAuthTokenDto)
     }
